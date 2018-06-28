@@ -5,7 +5,7 @@ class p6502 {
     private static X: number = 0;  //Register X
     private static Y: number = 0;  //Register Y
     private static PC: number = 0; //Program Counter
-    private static SP: number = 0; //Stack Pointer
+    private static SP: number = 0xFF; //Stack Pointer
     private static flags = {
         carry: false, //Last op caused overflow from bit 7 (or 0) of result
         zero: false, //Result of last op was 0
@@ -19,6 +19,17 @@ class p6502 {
     public static boot() {
         this.loadMemory('mem.hex');
         this.PC = this.getResetVector();
+
+        //Main loop
+        while(this.PC >= 0 && this.PC <= 0xFFFF) {
+            //Fetch
+            let opCode = this.mem[this.PC];
+            if (opCode === 0x00) {
+                //BRK Command
+                this.flags.breakCmd = true;
+                break;
+            }
+        }
     }
 
     private static loadMemory(filePath: string) {
@@ -35,11 +46,11 @@ class p6502 {
         for (let key of keys) {
             console.log(`${key}: ${this.flags[key]}`);
         }
-        console.log(`[ACC: 0x${this.ACC.toString(16).padStart(2, "0")
-                        } X: 0x${this.X.toString(16).padStart(2, "0")
-                        } Y: 0x${this.Y.toString(16).padStart(2, "0")
-                        } PC: 0x${this.PC.toString(16).padStart(4, "0")
-                        } SP: 0x${this.SP.toString(16).padStart(2, "0")} ]`);
+        console.log(`[ACC: 0x${this.ACC.toString(16).padStart(2, "0").toUpperCase()
+            } X: 0x${this.X.toString(16).padStart(2, "0").toUpperCase()
+            } Y: 0x${this.Y.toString(16).padStart(2, "0").toUpperCase()
+            } PC: 0x${this.PC.toString(16).padStart(4, "0").toUpperCase()
+            } SP: 0x${this.SP.toString(16).padStart(2, "0").toUpperCase()} ]`);
     }
 
 }
