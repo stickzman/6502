@@ -11,6 +11,10 @@ class p6502 {
         return combineHex(this.mem.slice(0xFFFC, 0xFFFE).reverse());
     }
     static displayState() {
+        let keys = Object.getOwnPropertyNames(this.flags);
+        for (let key of keys) {
+            console.log(`${key}: ${this.flags[key]}`);
+        }
         console.log(`[ACC: 0x${this.ACC.toString(16).padStart(2, "0")} X: 0x${this.X.toString(16).padStart(2, "0")} Y: 0x${this.Y.toString(16).padStart(2, "0")} PC: 0x${this.PC.toString(16).padStart(4, "0")} SP: 0x${this.SP.toString(16).padStart(2, "0")} ]`);
     }
 }

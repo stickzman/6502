@@ -31,6 +31,10 @@ class p6502 {
     }
 
     public static displayState() {
+        let keys = Object.getOwnPropertyNames(this.flags);
+        for (let key of keys) {
+            console.log(`${key}: ${this.flags[key]}`);
+        }
         console.log(`[ACC: 0x${this.ACC.toString(16).padStart(2, "0")
                         } X: 0x${this.X.toString(16).padStart(2, "0")
                         } Y: 0x${this.Y.toString(16).padStart(2, "0")
