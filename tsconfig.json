@@ -1,8 +1,7 @@
 {
     "compileOnSave": true,
     "compilerOptions": {
-        "target": "es6",
-        "module": "es6",
+        "target": "es2017",
     },
     "files": [
         "6502.ts"
