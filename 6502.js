@@ -1,16 +1,29 @@
+let opTable = {};
+opTable[0x00] = {
+    name: "BRK",
+    bytes: 1,
+    execute: function () {
+        this.running = false;
+        this.flags.breakCmd = true;
+        console.log("BRK");
+    }
+};
+/// <reference path="opCodes.ts" />
 class p6502 {
     static boot() {
         this.loadMemory('mem.hex');
         this.PC = this.getResetVector();
+        this.running = true;
         //Main loop
-        while (this.PC >= 0 && this.PC <= 0xFFFF) {
-            //Fetch
-            let opCode = this.mem[this.PC];
-            if (opCode === 0x00) {
-                //BRK Command
-                this.flags.breakCmd = true;
+        while (this.running) {
+            let opCode = this.mem[this.PC]; //Fetch
+            let op = opTable[opCode]; //Decode
+            if (op === undefined) {
+                console.log(`ERROR: Encountered unknown opCode: [0x${opCode.toString(16)}] at PC: 0x${this.PC.toString(16).padStart(4, "0").toUpperCase()}`);
                 break;
             }
+            op.execute.bind(this)(); //Execute
+            this.PC += op.bytes;
         }
     }
     static loadMemory(filePath) {
@@ -28,6 +41,7 @@ class p6502 {
         console.log(`[ACC: 0x${this.ACC.toString(16).padStart(2, "0").toUpperCase()} X: 0x${this.X.toString(16).padStart(2, "0").toUpperCase()} Y: 0x${this.Y.toString(16).padStart(2, "0").toUpperCase()} PC: 0x${this.PC.toString(16).padStart(4, "0").toUpperCase()} SP: 0x${this.SP.toString(16).padStart(2, "0").toUpperCase()} ]`);
     }
 }
+p6502.running = false;
 p6502.ACC = 0; //Accumulator
 p6502.X = 0; //Register X
 p6502.Y = 0; //Register Y
@@ -46,4 +60,5 @@ function combineHex(buff) {
     return (buff[0] << 8) | (buff[1]);
 }
 p6502.boot();
+console.log("");
 p6502.displayState();

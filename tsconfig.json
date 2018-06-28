@@ -2,8 +2,9 @@
     "compileOnSave": true,
     "compilerOptions": {
         "target": "es2017",
+        "outFile": "6502.js"
     },
-    "files": [
-        "6502.ts"
+    "include": [
+        "ts/**/*"
     ]
 }

@@ -1,6 +1,8 @@
+/// <reference path="opCodes.ts" />
 class p6502 {
 
     private static mem: Uint8Array;
+    private static running: boolean = false;
     private static ACC: number = 0;//Accumulator
     private static X: number = 0;  //Register X
     private static Y: number = 0;  //Register Y
@@ -20,15 +22,24 @@ class p6502 {
         this.loadMemory('mem.hex');
         this.PC = this.getResetVector();
 
+        this.running = true;
+
         //Main loop
-        while(this.PC >= 0 && this.PC <= 0xFFFF) {
-            //Fetch
-            let opCode = this.mem[this.PC];
-            if (opCode === 0x00) {
-                //BRK Command
-                this.flags.breakCmd = true;
+        while(this.running) {
+            let opCode = this.mem[this.PC]; //Fetch
+
+            let op = opTable[opCode];       //Decode
+            if (op === undefined) {
+                console.log(`ERROR: Encountered unknown opCode: [0x${
+                    opCode.toString(16)}] at PC: 0x${
+                    this.PC.toString(16).padStart(4, "0").toUpperCase()}`);
                 break;
             }
+
+            op.execute.bind(this)();        //Execute
+
+            this.PC += op.bytes;
+
         }
     }
 
@@ -60,4 +71,5 @@ function combineHex(buff: Uint8Array) {
 }
 
 p6502.boot();
+console.log("");
 p6502.displayState();
