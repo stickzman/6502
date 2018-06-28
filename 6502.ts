@@ -1,7 +1,11 @@
 class p6502 {
 
     private static mem: Buffer;
-    private ACC, X, Y, SP, PC: number;
+    private ACC: number;//Accumulator
+    private X: number;  //Register X
+    private Y: number;  //Register Y
+    private PC: number; //Program Counter
+    private SP: number; //Stack Pointer
     private flags = {
         carry: false, //Last op caused overflow from bit 7 (or 0) of result
         zero: false, //Result of last op was 0
