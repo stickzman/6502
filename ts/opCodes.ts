@@ -43,10 +43,20 @@ opTable[0x6D] = {
     bytes: 3,
     execute: function() {
         let addr = getAddr();
-        this.ACC += this.mem[addr] + this.flags.carry;
-        if (this.ACC > 255) {
+        let num1 = this.mem[addr];
+        let num2 = this.ACC;
+        this.ACC += num1 + this.flags.carry;
+        //Wrap ACC and set/clear carry flag
+        if (this.ACC > 0xFF) {
             this.flags.carry = true;
+            this.ACC -= 0x100;
+        } else {
+            this.flags.carry = false;
         }
+        //If the sum of two like signed terms is a diff sign, then the
+        //signed result is outside [-128, 127], so set overflow flag
+        this.flags.overflow= (num1 < 0x80 && num2 < 0x80 && this.ACC >= 0x80) ||
+                              (num1 >= 0x80 && num2 >= 0x80 && this.ACC < 0x80);
     }
 }
 opTable[0xA2] = {
