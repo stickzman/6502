@@ -123,8 +123,10 @@ function getAddr(read = true) {
 }
 /// <reference path="opCodes.ts" />
 class p6502 {
-    static boot(loadPath = "mem.hex") {
-        this.loadMemory(loadPath);
+    static boot(loadPath = this.MEM_PATH) {
+        if (this.mem === undefined) {
+            this.loadMemory(loadPath);
+        }
         this.PC = this.getResetVector();
         this.running = true;
         //Main loop
@@ -141,10 +143,34 @@ class p6502 {
             op.execute.bind(this)(); //Execute
             this.PC += op.bytes;
         }
+        //Write memory to file
+        this.writeMem();
     }
     static loadMemory(filePath) {
         let fs = require("fs");
         this.mem = fs.readFileSync(filePath);
+    }
+    static loadProg(filePath) {
+        let fs = require("fs");
+        let prog = fs.readFileSync(filePath);
+        let mem = new Buffer(this.MEM_SIZE);
+        prog.copy(mem, 0x0200);
+        mem[0xFFFC] = 0x00;
+        mem[0xFFFD] = 0x02;
+        this.mem = mem;
+    }
+    static loadProgStr(str) {
+        str = str.replace(/[^A-z0-9]/g, "");
+        let prog = Buffer.from(str, "hex");
+        let mem = new Buffer(this.MEM_SIZE);
+        prog.copy(mem, 0x0200);
+        mem[0xFFFC] = 0x00;
+        mem[0xFFFD] = 0x02;
+        this.mem = mem;
+    }
+    static writeMem() {
+        let fs = require("fs");
+        fs.writeFileSync(this.MEM_PATH, Buffer.from(this.mem));
     }
     static getResetVector() {
         return combineHex(this.mem.slice(0xFFFC, 0xFFFE).reverse());
@@ -170,6 +196,8 @@ class p6502 {
     }
 }
 p6502.debug = true; //Output debug info
+p6502.MEM_PATH = "mem.hex";
+p6502.MEM_SIZE = 0x10000;
 p6502.running = false;
 p6502.ACC = 0; //Accumulator
 p6502.X = 0; //Register X
@@ -188,7 +216,8 @@ p6502.flags = {
 function combineHex(buff) {
     return (buff[0] << 8) | (buff[1]);
 }
-//p6502.boot("../6502_functional_test.bin");
+//p6502.loadProg("pgrm.hex");
+p6502.loadProgStr("A9 05 ");
 p6502.boot();
 console.log("");
 p6502.displayState();

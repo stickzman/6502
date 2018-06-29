@@ -2,6 +2,8 @@
 class p6502 {
 
     public static debug: boolean = true; //Output debug info
+    private static readonly MEM_PATH = "mem.hex";
+    private static readonly MEM_SIZE = 0x10000;
 
     private static mem: Uint8Array;
     private static running: boolean = false;
@@ -20,8 +22,10 @@ class p6502 {
         negative: false //Result of last op had bit 7 set to 1
     }
 
-    public static boot(loadPath: string = "mem.hex") {
-        this.loadMemory(loadPath);
+    public static boot(loadPath: string = this.MEM_PATH) {
+        if (this.mem === undefined) {
+            this.loadMemory(loadPath);
+        }
         this.PC = this.getResetVector();
 
         this.running = true;
@@ -46,13 +50,40 @@ class p6502 {
             op.execute.bind(this)();        //Execute
 
             this.PC += op.bytes;
-
         }
+
+        //Write memory to file
+        this.writeMem();
     }
 
     private static loadMemory(filePath: string) {
         let fs = require("fs");
         this.mem = fs.readFileSync(filePath) as Uint8Array;
+    }
+
+    public static loadProg(filePath: string) {
+        let fs = require("fs");
+        let prog = fs.readFileSync(filePath) as Buffer;
+        let mem = new Buffer(this.MEM_SIZE);
+        prog.copy(mem, 0x0200);
+        mem[0xFFFC] = 0x00;
+        mem[0xFFFD] = 0x02;
+        this.mem = mem as Uint8Array;
+    }
+
+    public static loadProgStr(str: string) {
+        str = str.replace(/[^A-z0-9]/g, "");
+        let prog = Buffer.from(str, "hex");
+        let mem = new Buffer(this.MEM_SIZE);
+        prog.copy(mem, 0x0200);
+        mem[0xFFFC] = 0x00;
+        mem[0xFFFD] = 0x02;
+        this.mem = mem as Uint8Array;
+    }
+
+    private static writeMem() {
+        let fs = require("fs");
+        fs.writeFileSync(this.MEM_PATH, Buffer.from(this.mem));
     }
 
     private static getResetVector(): number{
@@ -92,7 +123,8 @@ function combineHex(buff: Uint8Array): number {
     return (buff[0]<<8)|(buff[1]);
 }
 
-//p6502.boot("../6502_functional_test.bin");
+//p6502.loadProg("pgrm.hex");
+p6502.loadProgStr("A9 05 ");
 p6502.boot();
 console.log("");
 p6502.displayState();
