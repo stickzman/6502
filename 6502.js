@@ -84,6 +84,25 @@ opTable[0xEC] = {
         this.flags.zero = (this.mem[addr] == this.X) ? true : false;
     }
 };
+opTable[0xD0] = {
+    name: "BNE",
+    bytes: 2,
+    execute: function () {
+        if (!this.flags.zero) {
+            if (this.debug) {
+                console.log(`Branching ${this.nextByte()} bytes...`);
+            }
+            this.PC += this.nextByte();
+        }
+    }
+};
+opTable[0xEE] = {
+    name: "INC",
+    bytes: 3,
+    execute: function () {
+        this.mem[this.nextByte()]++;
+    }
+};
 function getAddr(read = true) {
     let addr = p6502.next2Bytes();
     if (p6502.debug) {

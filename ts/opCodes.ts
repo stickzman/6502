@@ -92,6 +92,25 @@ opTable[0xEC] = {
         this.flags.zero = (this.mem[addr] == this.X) ? true : false;
     }
 }
+opTable[0xD0] = {
+    name: "BNE", //Branch Not Equal, branch if zero flag is cleared
+    bytes: 2,
+    execute: function() {
+        if (!this.flags.zero) {
+            if (this.debug) {
+                console.log(`Branching ${this.nextByte()} bytes...`);
+            }
+            this.PC += this.nextByte();
+        }
+    }
+}
+opTable[0xEE] = {
+    name: "INC", //Increment content in memory by 1
+    bytes: 3,
+    execute: function() {
+        this.mem[this.nextByte()]++;
+    }
+}
 
 function getAddr(read: boolean = true): number {
     let addr = p6502.next2Bytes();
