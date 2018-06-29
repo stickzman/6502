@@ -58,7 +58,7 @@ class p6502 {
 
     private static loadMemory(filePath: string) {
         let fs = require("fs");
-        this.mem = fs.readFileSync(filePath) as Uint8Array;
+        this.mem = fs.readFileSync(filePath) ;
     }
 
     public static loadProg(filePath: string) {
@@ -87,7 +87,8 @@ class p6502 {
     }
 
     private static getResetVector(): number{
-        return combineHex(this.mem.slice(0xFFFC,0xFFFE).reverse());
+        let bytes = new Uint8Array(this.mem.slice(0xFFFC,0xFFFE));
+        return combineHex(bytes.reverse());
     }
 
     public static displayState() {
@@ -110,7 +111,7 @@ class p6502 {
     }
 
     public static next2Bytes(flip = true): number {
-        let bytes = this.mem.slice(this.PC+1, this.PC+3);
+        let bytes = new Uint8Array(this.mem.slice(this.PC+1, this.PC+3));
         if (flip) {
             bytes.reverse();
         }
@@ -123,8 +124,11 @@ function combineHex(buff: Uint8Array): number {
     return (buff[0]<<8)|(buff[1]);
 }
 
-//p6502.loadProg("pgrm.hex");
-p6502.loadProgStr("A9 05 ");
+var input = require('readline-sync');
+var hexStr = input.question("Please enter program hex: ");
+if (hexStr.length > 0) {
+    p6502.loadProgStr(hexStr);
+}
 p6502.boot();
 console.log("");
 p6502.displayState();

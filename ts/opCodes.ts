@@ -125,7 +125,7 @@ opTable[0xEE] = {
 function getAddr(read: boolean = true): number {
     let addr = p6502.next2Bytes();
     if (p6502.debug) { console.log(`${
-        (read) ? "Reading from" : "Writing to"} memory from 0x${
+        (read) ? "Reading from" : "Writing to"} memory at 0x${
         addr.toString(16).padStart(4, "0")}...`); }
     return addr;
 }

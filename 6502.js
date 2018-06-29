@@ -117,7 +117,7 @@ opTable[0xEE] = {
 function getAddr(read = true) {
     let addr = p6502.next2Bytes();
     if (p6502.debug) {
-        console.log(`${(read) ? "Reading from" : "Writing to"} memory from 0x${addr.toString(16).padStart(4, "0")}...`);
+        console.log(`${(read) ? "Reading from" : "Writing to"} memory at 0x${addr.toString(16).padStart(4, "0")}...`);
     }
     return addr;
 }
@@ -173,7 +173,8 @@ class p6502 {
         fs.writeFileSync(this.MEM_PATH, Buffer.from(this.mem));
     }
     static getResetVector() {
-        return combineHex(this.mem.slice(0xFFFC, 0xFFFE).reverse());
+        let bytes = new Uint8Array(this.mem.slice(0xFFFC, 0xFFFE));
+        return combineHex(bytes.reverse());
     }
     static displayState() {
         //Print Registers
@@ -188,7 +189,7 @@ class p6502 {
         return this.mem[this.PC + 1];
     }
     static next2Bytes(flip = true) {
-        let bytes = this.mem.slice(this.PC + 1, this.PC + 3);
+        let bytes = new Uint8Array(this.mem.slice(this.PC + 1, this.PC + 3));
         if (flip) {
             bytes.reverse();
         }
@@ -216,8 +217,11 @@ p6502.flags = {
 function combineHex(buff) {
     return (buff[0] << 8) | (buff[1]);
 }
-//p6502.loadProg("pgrm.hex");
-p6502.loadProgStr("A9 05 ");
+var input = require('readline-sync');
+var hexStr = input.question("Please enter program hex: ");
+if (hexStr.length > 0) {
+    p6502.loadProgStr(hexStr);
+}
 p6502.boot();
 console.log("");
 p6502.displayState();
