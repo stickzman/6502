@@ -40,7 +40,7 @@ opTable[0x00] = {
 //AND zpg   0x25
 //ROL zpg   0x26
 opTable[0xA9] = {
-    name: "LDA (const)", //Load Accumulator with constant (Immediate)
+    name: "LDA (imm)", //Load Accumulator with constant (Immediate)
     bytes: 2,
     cycles: 2,
     execute: function() {
@@ -49,7 +49,7 @@ opTable[0xA9] = {
     }
 }
 opTable[0xAD] = {
-    name: "LDA (mem)", //Load Accumulator from memory location (Absolute)
+    name: "LDA (abs)", //Load Accumulator from memory location (Absolute)
     bytes: 3,
     cycles: 4,
     execute: function() {
@@ -59,7 +59,7 @@ opTable[0xAD] = {
     }
 }
 opTable[0xBD] = {
-    name: "LDA (mem, X)",
+    name: "LDA (abs, X)",
     bytes: 3,
     cycles: 4,
     execute: function() {
@@ -69,7 +69,7 @@ opTable[0xBD] = {
     }
 }
 opTable[0xB9] = {
-    name: "LDA (mem, Y)",
+    name: "LDA (abs, Y)",
     bytes: 3,
     cycles: 4,
     execute: function() {
@@ -120,7 +120,7 @@ opTable[0xA1] = {
 }
 
 opTable[0xA2] = {
-    name: "LDX (const)", //Load X with constant
+    name: "LDX (imm)", //Load X with constant
     bytes: 2,
     cycles: 2,
     execute: function() {
@@ -149,7 +149,7 @@ opTable[0xB6] = {
     }
 }
 opTable[0xAE] = {
-    name: "LDX (mem)", //Load X from memory
+    name: "LDX (abs)", //Load X from memory
     bytes: 3,
     cycles: 4,
     execute: function() {
@@ -159,7 +159,7 @@ opTable[0xAE] = {
     }
 }
 opTable[0xBE] = {
-    name: "LDX (mem, X)",
+    name: "LDX (abs, X)",
     bytes: 3,
     cycles: 4,
     execute: function() {
@@ -170,7 +170,7 @@ opTable[0xBE] = {
 }
 
 opTable[0xA0] = {
-    name: "LDY (const)", //Load Y with constant
+    name: "LDY (imm)", //Load Y with constant
     bytes: 2,
     cycles: 2,
     execute: function() {
@@ -196,7 +196,7 @@ opTable[0xB4] = {
     }
 }
 opTable[0xAC] = {
-    name: "LDY (mem)", //Load Y with constant
+    name: "LDY (abs)", //Load Y with constant
     bytes: 3,
     cycles: 4,
     execute: function() {
@@ -205,7 +205,7 @@ opTable[0xAC] = {
     }
 }
 opTable[0xBC] = {
-    name: "LDY (mem, X)",
+    name: "LDY (abs, X)",
     bytes: 3,
     cycles: 4,
     execute: function() {
@@ -468,6 +468,87 @@ opTable[0x71] = {
     execute: function() {
         let addr = this.getIndrRef(this.Y);
         ADC.bind(this).call(this.mem[addr]);
+    }
+}
+
+opTable[0xE9] = {
+    name: "SUB (imm)",
+    bytes: 2,
+    cycles: 2,
+    execute: function() {
+        let num = this.nextByte();
+        num = (num) ^ 0xFF; //Flip the sign
+        ADC.bind(this).call(this);
+    }
+}
+opTable[0xE5] = {
+    name: "SUB (zpg)",
+    bytes: 2,
+    cycles: 3,
+    execute: function() {
+        let num = this.mem[this.getZPageRef()];
+        num = (num) ^ 0xFF; //Flip the sign
+        ADC.bind(this).call(num);
+    }
+}
+opTable[0xF5] = {
+    name: "SUB (zpg, X)",
+    bytes: 2,
+    cycles: 4,
+    execute: function() {
+        let num = this.mem[this.getZPageRef(this.X)];
+        num = (num) ^ 0xFF; //Flip the sign
+        ADC.bind(this).call(num);
+    }
+}
+opTable[0xED] = {
+    name: "SUB (abs)",
+    bytes: 3,
+    cycles: 4,
+    execute: function() {
+        let num = this.mem[this.getRef()];
+        num = (num) ^ 0xFF; //Flip the sign
+        ADC.bind(this).call(num);
+    }
+}
+opTable[0xFD] = {
+    name: "SUB (abs, X)",
+    bytes: 3,
+    cycles: 4,
+    execute: function() {
+        let num = this.mem[this.getRef(this.X)];
+        num = (num) ^ 0xFF; //Flip the sign
+        ADC.bind(this).call(num);
+    }
+}
+opTable[0xF9] = {
+    name: "SUB (abs, Y)",
+    bytes: 3,
+    cycles: 4,
+    execute: function() {
+        let num = this.mem[this.getRef(this.Y)];
+        num = (num) ^ 0xFF; //Flip the sign
+        ADC.bind(this).call(num);
+    }
+}
+opTable[0xE1] = {
+    name: "SUB (ind, X)",
+    bytes: 2,
+    cycles: 6,
+    execute: function() {
+        let num = this.mem[this.getIndrRef(this.X)];
+        num = (num) ^ 0xFF; //Flip the sign
+        ADC.bind(this).call(num);
+    }
+}
+opTable[0xF1] = {
+    name: "SUB (ind, Y)",
+    bytes: 2,
+    cycles: 6,
+    execute: function() {
+        let num = this.mem[this.getIndrRef(this.Y)];
+        num = (num) ^ 0xFF; //Flip the sign
+        ADC.bind(this).call(num);
     }
 }
 
