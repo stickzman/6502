@@ -123,9 +123,9 @@ function getAddr(read = true) {
 }
 /// <reference path="opCodes.ts" />
 class p6502 {
-    static boot(loadPath = this.MEM_PATH) {
+    static boot() {
         if (this.mem === undefined) {
-            this.loadMemory(loadPath);
+            this.mem = new Uint8Array(0x10000);
         }
         this.PC = this.getResetVector();
         this.running = true;

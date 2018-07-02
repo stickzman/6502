@@ -22,9 +22,9 @@ class p6502 {
         negative: false //Result of last op had bit 7 set to 1
     }
 
-    public static boot(loadPath: string = this.MEM_PATH) {
+    public static boot() {
         if (this.mem === undefined) {
-            this.loadMemory(loadPath);
+            this.mem = new Uint8Array(0x10000);
         }
         this.PC = this.getResetVector();
 
