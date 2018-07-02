@@ -106,11 +106,11 @@ class p6502 {
         }
     }
 
-    public static nextByte(): number {
+    private static nextByte(): number {
         return this.mem[this.PC+1];
     }
 
-    public static next2Bytes(flip = true): number {
+    private static next2Bytes(flip = true): number {
         let bytes = new Uint8Array(this.mem.slice(this.PC+1, this.PC+3));
         if (flip) {
             bytes.reverse();
@@ -118,17 +118,27 @@ class p6502 {
         return combineHexBuff(bytes);
     }
 
-    public static getRef(read: boolean = true): number {
-        let addr = this.next2Bytes();
-        if (this.debug) { console.log(`${
-            (read) ? "Reading from" : "Writing to"} memory at 0x${
+    private static updateFlags(register: number) {
+        this.flags.zero = (register === 0x00);
+        this.flags.negative = (register > 0x7F);
+    }
+
+    private static getRef(offset: number = 0): number {
+        let addr = this.next2Bytes() + offset;
+        if (this.debug) { console.log(`Accessing memory at 0x${
             addr.toString(16).padStart(4, "0")}...`); }
         return addr;
     }
 
-    public static getIndRef(addX: boolean = true): number {
-        let addr = this.nextByte();
-        addr += (addX) ? this.X : this.Y;
+    private static getZPageRef(offset: number = 0): number {
+        let addr = this.nextByte() + offset;
+        if (this.debug) { console.log(`Accessing memory at 0x${
+            addr.toString(16).padStart(4, "0")}...`); }
+        return addr;
+    }
+
+    private static getIndrRef(offset: number = 0): number {
+        let addr = this.nextByte() + offset;
         return combineHex(this.mem[addr+1], this.mem[addr]);
     }
 }

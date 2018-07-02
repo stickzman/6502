@@ -35,6 +35,7 @@ opTable[0xA9] = {
     cycles: 2,
     execute: function () {
         this.ACC = this.nextByte();
+        this.updateFlags(this.ACC);
     }
 };
 opTable[0xAD] = {
@@ -44,6 +45,7 @@ opTable[0xAD] = {
     execute: function () {
         let addr = this.getRef();
         this.ACC = this.mem[addr];
+        this.updateFlags(this.ACC);
     }
 };
 opTable[0xBD] = {
@@ -51,8 +53,9 @@ opTable[0xBD] = {
     bytes: 3,
     cycles: 4,
     execute: function () {
-        let addr = this.getRef() + this.X;
+        let addr = this.getRef(this.X);
         this.ACC = this.mem[addr];
+        this.updateFlags(this.ACC);
     }
 };
 opTable[0xB9] = {
@@ -60,8 +63,9 @@ opTable[0xB9] = {
     bytes: 3,
     cycles: 4,
     execute: function () {
-        let addr = this.getRef() + this.Y;
+        let addr = this.getRef(this.Y);
         this.ACC = this.mem[addr];
+        this.updateFlags(this.ACC);
     }
 };
 opTable[0xA5] = {
@@ -71,6 +75,7 @@ opTable[0xA5] = {
     execute: function () {
         let addr = combineHex(0x00, this.nextByte());
         this.ACC = this.mem[addr];
+        this.updateFlags(this.ACC);
     }
 };
 opTable[0xB5] = {
@@ -80,6 +85,7 @@ opTable[0xB5] = {
     execute: function () {
         let addr = this.nextByte() + this.X;
         this.ACC = this.mem[addr];
+        this.updateFlags(this.ACC);
     }
 };
 opTable[0xA1] = {
@@ -87,8 +93,9 @@ opTable[0xA1] = {
     bytes: 2,
     cycles: 6,
     execute: function () {
-        let addr = this.getIndRef();
+        let addr = this.getIndRef(this.X);
         this.ACC = this.mem[addr];
+        this.updateFlags(this.ACC);
     }
 };
 opTable[0xA1] = {
@@ -96,8 +103,9 @@ opTable[0xA1] = {
     bytes: 2,
     cycles: 5,
     execute: function () {
-        let addr = this.getIndRef(false);
+        let addr = this.getIndRef(this.Y);
         this.ACC = this.mem[addr];
+        this.updateFlags(this.ACC);
     }
 };
 opTable[0x8D] = {
@@ -105,8 +113,9 @@ opTable[0x8D] = {
     bytes: 3,
     cycles: 4,
     execute: function () {
-        let addr = this.getRef(false);
+        let addr = this.getRef();
         this.mem[addr] = this.ACC;
+        this.updateFlags(this.ACC);
     }
 };
 opTable[0x6D] = {
@@ -138,6 +147,27 @@ opTable[0xA2] = {
     cycles: 2,
     execute: function () {
         this.X = this.nextByte();
+        this.updateFlags(this.X);
+    }
+};
+opTable[0xA6] = {
+    name: "LDX (zpg)",
+    bytes: 2,
+    cycles: 3,
+    execute: function () {
+        let addr = this.nextByte();
+        this.X = this.mem[addr];
+        this.updateFlags(this.X);
+    }
+};
+opTable[0xB6] = {
+    name: "LDX (zpg, X)",
+    bytes: 2,
+    cycles: 4,
+    execute: function () {
+        let addr = this.nextByte() + this.X;
+        this.X = this.mem[addr];
+        this.updateFlags(this.X);
     }
 };
 opTable[0xAE] = {
@@ -146,7 +176,18 @@ opTable[0xAE] = {
     cycles: 4,
     execute: function () {
         let addr = this.getRef();
-        this.X = addr;
+        this.X = this.mem[addr];
+        this.updateFlags(this.X);
+    }
+};
+opTable[0xBE] = {
+    name: "LDX (mem, X)",
+    bytes: 3,
+    cycles: 4,
+    execute: function () {
+        let addr = this.getRef(this.X);
+        this.X = this.mem[addr];
+        this.updateFlags(this.X);
     }
 };
 opTable[0xA0] = {
@@ -157,13 +198,85 @@ opTable[0xA0] = {
         this.Y = this.nextByte();
     }
 };
+opTable[0xA4] = {
+    name: "LDY (zpg)",
+    bytes: 2,
+    cycles: 3,
+    execute: function () {
+        let addr = this.nextByte();
+        this.Y = this.mem[addr];
+    }
+};
+opTable[0xB4] = {
+    name: "LDY (zpg, X)",
+    bytes: 2,
+    cycles: 4,
+    execute: function () {
+        let addr = this.nextByte() + this.X;
+        this.Y = this.mem[addr];
+    }
+};
 opTable[0xAC] = {
     name: "LDY (mem)",
     bytes: 3,
     cycles: 4,
     execute: function () {
         let addr = this.getRef();
-        this.Y = addr;
+        this.Y = this.mem[addr];
+    }
+};
+opTable[0xBC] = {
+    name: "LDY (mem, X)",
+    bytes: 3,
+    cycles: 4,
+    execute: function () {
+        let addr = this.getRef(this.X);
+        this.Y = this.mem[addr];
+    }
+};
+opTable[0x85] = {
+    name: "STA (zpg)",
+    bytes: 2,
+    cycles: 3,
+    execute: function () {
+        let addr = this.nextByte();
+        this.mem[addr] = this.ACC;
+    }
+};
+opTable[0x95] = {
+    name: "STA (zpg, X)",
+    bytes: 2,
+    cycles: 4,
+    execute: function () {
+        let addr = this.nextByte() + this.X;
+        this.mem[addr] = this.ACC;
+    }
+};
+opTable[0x8D] = {
+    name: "STA (abs)",
+    bytes: 3,
+    cycles: 4,
+    execute: function () {
+        let addr = this.getRef();
+        this.mem[addr] = this.ACC;
+    }
+};
+opTable[0x9D] = {
+    name: "STA (abs, X)",
+    bytes: 3,
+    cycles: 4,
+    execute: function () {
+        let addr = this.getRef(this.X);
+        this.mem[addr] = this.ACC;
+    }
+};
+opTable[0x99] = {
+    name: "STA (abs, Y)",
+    bytes: 3,
+    cycles: 4,
+    execute: function () {
+        let addr = this.getRef(this.Y);
+        this.mem[addr] = this.ACC;
     }
 };
 opTable[0xEA] = {
@@ -276,16 +389,26 @@ class p6502 {
         }
         return combineHexBuff(bytes);
     }
-    static getRef(read = true) {
-        let addr = this.next2Bytes();
+    static updateFlags(register) {
+        this.flags.zero = (register === 0x00);
+        this.flags.negative = (register > 0x7F);
+    }
+    static getRef(offset = 0) {
+        let addr = this.next2Bytes() + offset;
         if (this.debug) {
-            console.log(`${(read) ? "Reading from" : "Writing to"} memory at 0x${addr.toString(16).padStart(4, "0")}...`);
+            console.log(`Accessing memory at 0x${addr.toString(16).padStart(4, "0")}...`);
         }
         return addr;
     }
-    static getIndRef(addX = true) {
-        let addr = this.nextByte();
-        addr += (addX) ? this.X : this.Y;
+    static getZPageRef(offset = 0) {
+        let addr = this.nextByte() + offset;
+        if (this.debug) {
+            console.log(`Accessing memory at 0x${addr.toString(16).padStart(4, "0")}...`);
+        }
+        return addr;
+    }
+    static getIndrRef(offset = 0) {
+        let addr = this.nextByte() + offset;
         return combineHex(this.mem[addr + 1], this.mem[addr]);
     }
 }

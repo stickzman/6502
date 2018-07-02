@@ -44,6 +44,7 @@ opTable[0xA9] = {
     cycles: 2,
     execute: function() {
         this.ACC = this.nextByte();
+        this.updateFlags(this.ACC);
     }
 }
 opTable[0xAD] = {
@@ -53,6 +54,7 @@ opTable[0xAD] = {
     execute: function() {
         let addr = this.getRef();
         this.ACC = this.mem[addr];
+        this.updateFlags(this.ACC);
     }
 }
 opTable[0xBD] = {
@@ -60,8 +62,9 @@ opTable[0xBD] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        let addr = this.getRef() + this.X;
+        let addr = this.getRef(this.X);
         this.ACC = this.mem[addr];
+        this.updateFlags(this.ACC);
     }
 }
 opTable[0xB9] = {
@@ -69,8 +72,9 @@ opTable[0xB9] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        let addr = this.getRef() + this.Y;
+        let addr = this.getRef(this.Y);
         this.ACC = this.mem[addr];
+        this.updateFlags(this.ACC);
     }
 }
 opTable[0xA5] = {
@@ -80,6 +84,7 @@ opTable[0xA5] = {
     execute: function() {
         let addr = combineHex(0x00, this.nextByte());
         this.ACC = this.mem[addr];
+        this.updateFlags(this.ACC);
     }
 }
 opTable[0xB5] = {
@@ -89,6 +94,7 @@ opTable[0xB5] = {
     execute: function() {
         let addr = this.nextByte() + this.X;
         this.ACC = this.mem[addr];
+        this.updateFlags(this.ACC);
     }
 }
 opTable[0xA1] = {
@@ -96,8 +102,9 @@ opTable[0xA1] = {
     bytes: 2,
     cycles: 6,
     execute: function() {
-        let addr = this.getIndRef();
+        let addr = this.getIndRef(this.X);
         this.ACC = this.mem[addr];
+        this.updateFlags(this.ACC);
     }
 }
 opTable[0xA1] = {
@@ -105,8 +112,9 @@ opTable[0xA1] = {
     bytes: 2,
     cycles: 5,
     execute: function() {
-        let addr = this.getIndRef(false);
+        let addr = this.getIndRef(this.Y);
         this.ACC = this.mem[addr];
+        this.updateFlags(this.ACC);
     }
 }
 
@@ -115,10 +123,12 @@ opTable[0x8D] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        let addr = this.getRef(false);
+        let addr = this.getRef();
         this.mem[addr] = this.ACC;
+        this.updateFlags(this.ACC);
     }
 }
+
 opTable[0x6D] = {
     name: "ADC", //Add contents at memory location to ACC
     bytes: 3,
@@ -141,12 +151,34 @@ opTable[0x6D] = {
                               (num1 >= 0x80 && num2 >= 0x80 && this.ACC < 0x80);
     }
 }
+
 opTable[0xA2] = {
     name: "LDX (const)", //Load X with constant
     bytes: 2,
     cycles: 2,
     execute: function() {
         this.X = this.nextByte();
+        this.updateFlags(this.X);
+    }
+}
+opTable[0xA6] = {
+    name: "LDX (zpg)",
+    bytes: 2,
+    cycles: 3,
+    execute: function() {
+        let addr = this.nextByte();
+        this.X = this.mem[addr];
+        this.updateFlags(this.X);
+    }
+}
+opTable[0xB6] = {
+    name: "LDX (zpg, X)",
+    bytes: 2,
+    cycles: 4,
+    execute: function() {
+        let addr = this.nextByte() + this.X;
+        this.X = this.mem[addr];
+        this.updateFlags(this.X);
     }
 }
 opTable[0xAE] = {
@@ -155,9 +187,21 @@ opTable[0xAE] = {
     cycles: 4,
     execute: function() {
         let addr = this.getRef();
-        this.X = addr;
+        this.X = this.mem[addr];
+        this.updateFlags(this.X);
     }
 }
+opTable[0xBE] = {
+    name: "LDX (mem, X)",
+    bytes: 3,
+    cycles: 4,
+    execute: function() {
+        let addr = this.getRef(this.X);
+        this.X = this.mem[addr];
+        this.updateFlags(this.X);
+    }
+}
+
 opTable[0xA0] = {
     name: "LDY (const)", //Load Y with constant
     bytes: 2,
@@ -166,21 +210,96 @@ opTable[0xA0] = {
         this.Y = this.nextByte();
     }
 }
+opTable[0xA4] = {
+    name: "LDY (zpg)",
+    bytes: 2,
+    cycles: 3,
+    execute: function() {
+        let addr = this.nextByte();
+        this.Y = this.mem[addr];
+    }
+}
+opTable[0xB4] = {
+    name: "LDY (zpg, X)",
+    bytes: 2,
+    cycles: 4,
+    execute: function() {
+        let addr = this.nextByte() + this.X;
+        this.Y = this.mem[addr];
+    }
+}
 opTable[0xAC] = {
     name: "LDY (mem)", //Load Y with constant
     bytes: 3,
     cycles: 4,
     execute: function() {
         let addr = this.getRef();
-        this.Y = addr;
+        this.Y = this.mem[addr];
     }
 }
+opTable[0xBC] = {
+    name: "LDY (mem, X)",
+    bytes: 3,
+    cycles: 4,
+    execute: function() {
+        let addr = this.getRef(this.X);
+        this.Y = this.mem[addr];
+    }
+}
+
+opTable[0x85] = {
+    name: "STA (zpg)",
+    bytes: 2,
+    cycles: 3,
+    execute: function() {
+        let addr = this.nextByte();
+        this.mem[addr] = this.ACC;
+    }
+}
+opTable[0x95] = {
+    name: "STA (zpg, X)",
+    bytes: 2,
+    cycles: 4,
+    execute: function() {
+        let addr = this.nextByte() + this.X;
+        this.mem[addr] = this.ACC;
+    }
+}
+opTable[0x8D] = {
+    name: "STA (abs)",
+    bytes: 3,
+    cycles: 4,
+    execute: function() {
+        let addr = this.getRef();
+        this.mem[addr] = this.ACC;
+    }
+}
+opTable[0x9D] = {
+    name: "STA (abs, X)",
+    bytes: 3,
+    cycles: 4,
+    execute: function() {
+        let addr = this.getRef(this.X);
+        this.mem[addr] = this.ACC;
+    }
+}
+opTable[0x99] = {
+    name: "STA (abs, Y)",
+    bytes: 3,
+    cycles: 4,
+    execute: function() {
+        let addr = this.getRef(this.Y);
+        this.mem[addr] = this.ACC;
+    }
+}
+
 opTable[0xEA] = {
     name: "NOP", //No operation
     bytes: 1,
     cycles: 1,
     execute: function() { }
 }
+
 opTable[0xEC] = {
     name: "CPX", //Compare byte in memory to X register, sets zero if equal
     bytes: 3,
@@ -190,6 +309,7 @@ opTable[0xEC] = {
         this.flags.zero = (this.mem[addr] == this.X) ? true : false;
     }
 }
+
 opTable[0xD0] = {
     name: "BNE", //Branch Not Equal, branch if zero flag is cleared
     bytes: 2,
@@ -203,6 +323,7 @@ opTable[0xD0] = {
         }
     }
 }
+
 opTable[0xEE] = {
     name: "INC", //Increment content in memory by 1
     bytes: 3,
