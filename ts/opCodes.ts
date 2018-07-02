@@ -502,12 +502,63 @@ opTable[0xD0] = {
     }
 }
 
+opTable[0xE6] = {
+    name: "INC (zpg)", //Increment byte in memory by 1
+    bytes: 2,
+    cycles: 5,
+    execute: function() {
+        let addr = this.getZPageRef();
+        this.mem[addr]++;
+        this.updateNumStateFlags(this.mem[addr]);
+    }
+}
+opTable[0xF6] = {
+    name: "INC (zpg, X)",
+    bytes: 2,
+    cycles: 6,
+    execute: function() {
+        let addr = this.getZPageRef(this.X);
+        this.mem[addr]++;
+        this.updateNumStateFlags(this.mem[addr]);
+    }
+}
 opTable[0xEE] = {
-    name: "INC", //Increment byte in memory by 1
+    name: "INC (abs)",
     bytes: 3,
     cycles: 6,
     execute: function() {
-        this.mem[this.nextByte()]++;
+        let addr = this.getRef();
+        this.mem[addr]++;
+        this.updateNumStateFlags(this.mem[addr]);
+    }
+}
+opTable[0xFE] = {
+    name: "INC (abs, X)",
+    bytes: 3,
+    cycles: 7,
+    execute: function() {
+        let addr = this.getRef(this.X);
+        this.mem[addr]++;
+        this.updateNumStateFlags(this.mem[addr]);
+    }
+}
+
+opTable[0xE8] = {
+    name: "INX",
+    bytes: 1,
+    cycles: 2,
+    execute: function() {
+        this.X++;
+        this.updateNumStateFlags(this.X);
+    }
+}
+opTable[0xC8] = {
+    name: "INY",
+    bytes: 1,
+    cycles: 2,
+    execute: function() {
+        this.Y++;
+        this.updateNumStateFlags(this.Y);
     }
 }
 
