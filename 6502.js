@@ -2,14 +2,17 @@ let opTable = {};
 opTable[0x00] = {
     name: "BRK",
     bytes: 1,
+    cycles: 7,
     execute: function () {
         this.running = false;
         this.flags.break = true;
     }
 };
+//LDA
 opTable[0xA9] = {
     name: "LDA (const)",
     bytes: 2,
+    cycles: 2,
     execute: function () {
         this.ACC = this.nextByte();
     }
@@ -17,6 +20,7 @@ opTable[0xA9] = {
 opTable[0xAD] = {
     name: "LDA (mem)",
     bytes: 3,
+    cycles: 4,
     execute: function () {
         let addr = getAddr();
         this.ACC = this.mem[addr];
@@ -25,6 +29,7 @@ opTable[0xAD] = {
 opTable[0x8D] = {
     name: "STA",
     bytes: 3,
+    cycles: 4,
     execute: function () {
         let addr = getAddr(false);
         this.mem[addr] = this.ACC;
@@ -33,6 +38,7 @@ opTable[0x8D] = {
 opTable[0x6D] = {
     name: "ADC",
     bytes: 3,
+    cycles: 4,
     execute: function () {
         let addr = getAddr();
         let num1 = this.mem[addr];
@@ -55,6 +61,7 @@ opTable[0x6D] = {
 opTable[0xA2] = {
     name: "LDX (const)",
     bytes: 2,
+    cycles: 2,
     execute: function () {
         this.X = this.nextByte();
     }
@@ -62,6 +69,7 @@ opTable[0xA2] = {
 opTable[0xAE] = {
     name: "LDX (mem)",
     bytes: 3,
+    cycles: 4,
     execute: function () {
         let addr = getAddr();
         this.X = addr;
@@ -70,13 +78,15 @@ opTable[0xAE] = {
 opTable[0xA0] = {
     name: "LDY (const)",
     bytes: 2,
+    cycles: 2,
     execute: function () {
         this.Y = this.nextByte();
     }
 };
 opTable[0xAC] = {
     name: "LDY (mem)",
-    bytes: 2,
+    bytes: 3,
+    cycles: 4,
     execute: function () {
         let addr = getAddr();
         this.Y = addr;
@@ -85,11 +95,13 @@ opTable[0xAC] = {
 opTable[0xEA] = {
     name: "NOP",
     bytes: 1,
+    cycles: 1,
     execute: function () { }
 };
 opTable[0xEC] = {
     name: "CPX",
     bytes: 3,
+    cycles: 4,
     execute: function () {
         let addr = getAddr();
         this.flags.zero = (this.mem[addr] == this.X) ? true : false;
@@ -98,6 +110,7 @@ opTable[0xEC] = {
 opTable[0xD0] = {
     name: "BNE",
     bytes: 2,
+    cycles: 3,
     execute: function () {
         if (!this.flags.zero) {
             if (this.debug) {
@@ -110,6 +123,7 @@ opTable[0xD0] = {
 opTable[0xEE] = {
     name: "INC",
     bytes: 3,
+    cycles: 6,
     execute: function () {
         this.mem[this.nextByte()]++;
     }
