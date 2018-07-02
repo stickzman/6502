@@ -88,7 +88,7 @@ class p6502 {
 
     private static getResetVector(): number{
         let bytes = new Uint8Array(this.mem.slice(0xFFFC,0xFFFE));
-        return combineHex(bytes.reverse());
+        return combineHexBuff(bytes.reverse());
     }
 
     public static displayState() {
@@ -115,13 +115,16 @@ class p6502 {
         if (flip) {
             bytes.reverse();
         }
-        return combineHex(bytes);
+        return combineHexBuff(bytes);
     }
 
-}
+    public static getX() {
+        return this.X;
+    }
 
-function combineHex(buff: Uint8Array): number {
-    return (buff[0]<<8)|(buff[1]);
+    public static getY() {
+        return this.Y;
+    }
 }
 
 var input = require('readline-sync');

@@ -17,7 +17,27 @@ opTable[0x00] = {
         this.flags.break = true;
     }
 }
-//LDA
+//ORA X,ind 0x01
+//ORA zpg   0x05
+//ASL zpg   0x06
+//PHP impl  0x08
+//ORA #     0x09
+//ASL       0x0A
+//ORA abs   0x0D
+//ASL abs   0x0E
+//BPL rel   0x10
+//ORA ind,Y 0x11
+//ORA zpg,X 0x15
+//ASL zpg,X 0x16
+//CLC impl  0x18
+//ORA abs,Y 0x19
+//ORA abs,X 0x1D
+//ASL abs,X 0x1E
+//JSR abs   0x20
+//AND X,ind 0x21
+//BIT zpg   0x24
+//AND zpg   0x25
+//ROL zpg   0x26
 opTable[0xA9] = {
     name: "LDA (const)", //Load Accumulator with constant (Immediate)
     bytes: 2,
@@ -31,16 +51,71 @@ opTable[0xAD] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        let addr = getAddr();
+        let addr = getRef();
         this.ACC = this.mem[addr];
     }
 }
+opTable[0xBD] = {
+    name: "LDA (mem, X)",
+    bytes: 3,
+    cycles: 4,
+    execute: function() {
+        let addr = getRef() + this.X;
+        this.ACC = this.mem[addr];
+    }
+}
+opTable[0xB9] = {
+    name: "LDA (mem, Y)",
+    bytes: 3,
+    cycles: 4,
+    execute: function() {
+        let addr = getRef() + this.Y;
+        this.ACC = this.mem[addr];
+    }
+}
+opTable[0xA5] = {
+    name: "LDA (zpg)",
+    bytes: 2,
+    cycles: 3,
+    execute: function() {
+        let addr = combineHex(0x00, this.nextByte());
+        this.ACC = this.mem[addr];
+    }
+}
+opTable[0xB5] = {
+    name: "LDA (zpg, X)",
+    bytes: 2,
+    cycles: 4,
+    execute: function() {
+        let addr = this.nextByte() + this.X;
+        this.ACC = this.mem[addr];
+    }
+}
+opTable[0xA1] = {
+    name: "LDA (ind, X)",
+    bytes: 2,
+    cycles: 6,
+    execute: function() {
+        let addr = getIndRef();
+        this.ACC = this.mem[addr];
+    }
+}
+opTable[0xA1] = {
+    name: "LDA (ind, Y)",
+    bytes: 2,
+    cycles: 5,
+    execute: function() {
+        let addr = getIndRef(false);
+        this.ACC = this.mem[addr];
+    }
+}
+
 opTable[0x8D] = {
     name: "STA", //Store Accumulator in memory location
     bytes: 3,
     cycles: 4,
     execute: function() {
-        let addr = getAddr(false);
+        let addr = getRef(false);
         this.mem[addr] = this.ACC;
     }
 }
@@ -49,7 +124,7 @@ opTable[0x6D] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        let addr = getAddr();
+        let addr = getRef();
         let num1 = this.mem[addr];
         let num2 = this.ACC;
         this.ACC += num1 + this.flags.carry;
@@ -79,7 +154,7 @@ opTable[0xAE] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        let addr = getAddr();
+        let addr = getRef();
         this.X = addr;
     }
 }
@@ -96,7 +171,7 @@ opTable[0xAC] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        let addr = getAddr();
+        let addr = getRef();
         this.Y = addr;
     }
 }
@@ -111,7 +186,7 @@ opTable[0xEC] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        let addr = getAddr();
+        let addr = getRef();
         this.flags.zero = (this.mem[addr] == this.X) ? true : false;
     }
 }
@@ -135,12 +210,4 @@ opTable[0xEE] = {
     execute: function() {
         this.mem[this.nextByte()]++;
     }
-}
-
-function getAddr(read: boolean = true): number {
-    let addr = p6502.next2Bytes();
-    if (p6502.debug) { console.log(`${
-        (read) ? "Reading from" : "Writing to"} memory at 0x${
-        addr.toString(16).padStart(4, "0")}...`); }
-    return addr;
 }
