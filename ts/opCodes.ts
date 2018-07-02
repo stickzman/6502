@@ -51,7 +51,7 @@ opTable[0xAD] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        let addr = getRef();
+        let addr = this.getRef();
         this.ACC = this.mem[addr];
     }
 }
@@ -60,7 +60,7 @@ opTable[0xBD] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        let addr = getRef() + this.X;
+        let addr = this.getRef() + this.X;
         this.ACC = this.mem[addr];
     }
 }
@@ -69,7 +69,7 @@ opTable[0xB9] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        let addr = getRef() + this.Y;
+        let addr = this.getRef() + this.Y;
         this.ACC = this.mem[addr];
     }
 }
@@ -96,7 +96,7 @@ opTable[0xA1] = {
     bytes: 2,
     cycles: 6,
     execute: function() {
-        let addr = getIndRef();
+        let addr = this.getIndRef();
         this.ACC = this.mem[addr];
     }
 }
@@ -105,7 +105,7 @@ opTable[0xA1] = {
     bytes: 2,
     cycles: 5,
     execute: function() {
-        let addr = getIndRef(false);
+        let addr = this.getIndRef(false);
         this.ACC = this.mem[addr];
     }
 }
@@ -115,7 +115,7 @@ opTable[0x8D] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        let addr = getRef(false);
+        let addr = this.getRef(false);
         this.mem[addr] = this.ACC;
     }
 }
@@ -124,7 +124,7 @@ opTable[0x6D] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        let addr = getRef();
+        let addr = this.getRef();
         let num1 = this.mem[addr];
         let num2 = this.ACC;
         this.ACC += num1 + this.flags.carry;
@@ -154,7 +154,7 @@ opTable[0xAE] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        let addr = getRef();
+        let addr = this.getRef();
         this.X = addr;
     }
 }
@@ -171,7 +171,7 @@ opTable[0xAC] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        let addr = getRef();
+        let addr = this.getRef();
         this.Y = addr;
     }
 }
@@ -186,7 +186,7 @@ opTable[0xEC] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        let addr = getRef();
+        let addr = this.getRef();
         this.flags.zero = (this.mem[addr] == this.X) ? true : false;
     }
 }

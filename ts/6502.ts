@@ -118,12 +118,18 @@ class p6502 {
         return combineHexBuff(bytes);
     }
 
-    public static getX() {
-        return this.X;
+    public static getRef(read: boolean = true): number {
+        let addr = this.next2Bytes();
+        if (this.debug) { console.log(`${
+            (read) ? "Reading from" : "Writing to"} memory at 0x${
+            addr.toString(16).padStart(4, "0")}...`); }
+        return addr;
     }
 
-    public static getY() {
-        return this.Y;
+    public static getIndRef(addX: boolean = true): number {
+        let addr = this.nextByte();
+        addr += (addX) ? this.X : this.Y;
+        return combineHex(this.mem[addr+1], this.mem[addr]);
     }
 }
 
