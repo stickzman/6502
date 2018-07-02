@@ -490,6 +490,64 @@ opTable[0xEE] = {
         this.mem[this.nextByte()]++;
     }
 };
+opTable[0xC6] = {
+    name: "DEC (zpg)",
+    bytes: 2,
+    cycles: 5,
+    execute: function () {
+        let addr = this.getZPageRef();
+        this.mem[addr]--;
+        this.updateNumStateFlags(this.mem[addr]);
+    }
+};
+opTable[0xD6] = {
+    name: "DEC (zpg, X)",
+    bytes: 2,
+    cycles: 6,
+    execute: function () {
+        let addr = this.getZPageRef(this.X);
+        this.mem[addr]--;
+        this.updateNumStateFlags(this.mem[addr]);
+    }
+};
+opTable[0xCE] = {
+    name: "DEC (abs)",
+    bytes: 3,
+    cycles: 3,
+    execute: function () {
+        let addr = this.getRef();
+        this.mem[addr]--;
+        this.updateNumStateFlags(this.mem[addr]);
+    }
+};
+opTable[0xDE] = {
+    name: "DEC (abs, X)",
+    bytes: 3,
+    cycles: 7,
+    execute: function () {
+        let addr = this.getRef(this.X);
+        this.mem[addr]--;
+        this.updateNumStateFlags(this.mem[addr]);
+    }
+};
+opTable[0xCA] = {
+    name: "DEX",
+    bytes: 1,
+    cycles: 2,
+    execute: function () {
+        this.X--;
+        this.updateNumStateFlags(this.X);
+    }
+};
+opTable[0x88] = {
+    name: "DEY",
+    bytes: 1,
+    cycles: 2,
+    execute: function () {
+        this.Y--;
+        this.updateNumStateFlags(this.Y);
+    }
+};
 /// <reference path="opCodes.ts" />
 class p6502 {
     static boot() {
