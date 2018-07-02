@@ -1,3 +1,4 @@
+/// <reference path="6502.ts" />
 let opTable = {};
 opTable[0x00] = {
     name: "BRK",
@@ -35,7 +36,7 @@ opTable[0xA9] = {
     cycles: 2,
     execute: function () {
         this.ACC = this.nextByte();
-        this.updateFlags(this.ACC);
+        this.updateNumStateFlags(this.ACC);
     }
 };
 opTable[0xAD] = {
@@ -45,7 +46,7 @@ opTable[0xAD] = {
     execute: function () {
         let addr = this.getRef();
         this.ACC = this.mem[addr];
-        this.updateFlags(this.ACC);
+        this.updateNumStateFlags(this.ACC);
     }
 };
 opTable[0xBD] = {
@@ -55,7 +56,7 @@ opTable[0xBD] = {
     execute: function () {
         let addr = this.getRef(this.X);
         this.ACC = this.mem[addr];
-        this.updateFlags(this.ACC);
+        this.updateNumStateFlags(this.ACC);
     }
 };
 opTable[0xB9] = {
@@ -65,7 +66,7 @@ opTable[0xB9] = {
     execute: function () {
         let addr = this.getRef(this.Y);
         this.ACC = this.mem[addr];
-        this.updateFlags(this.ACC);
+        this.updateNumStateFlags(this.ACC);
     }
 };
 opTable[0xA5] = {
@@ -75,7 +76,7 @@ opTable[0xA5] = {
     execute: function () {
         let addr = this.getZPageRef();
         this.ACC = this.mem[addr];
-        this.updateFlags(this.ACC);
+        this.updateNumStateFlags(this.ACC);
     }
 };
 opTable[0xB5] = {
@@ -85,7 +86,7 @@ opTable[0xB5] = {
     execute: function () {
         let addr = this.getZPageRef(this.X);
         this.ACC = this.mem[addr];
-        this.updateFlags(this.ACC);
+        this.updateNumStateFlags(this.ACC);
     }
 };
 opTable[0xA1] = {
@@ -95,7 +96,7 @@ opTable[0xA1] = {
     execute: function () {
         let addr = this.getIndRef(this.X);
         this.ACC = this.mem[addr];
-        this.updateFlags(this.ACC);
+        this.updateNumStateFlags(this.ACC);
     }
 };
 opTable[0xA1] = {
@@ -105,30 +106,7 @@ opTable[0xA1] = {
     execute: function () {
         let addr = this.getIndRef(this.Y);
         this.ACC = this.mem[addr];
-        this.updateFlags(this.ACC);
-    }
-};
-opTable[0x6D] = {
-    name: "ADC",
-    bytes: 3,
-    cycles: 4,
-    execute: function () {
-        let addr = this.getRef();
-        let num1 = this.mem[addr];
-        let num2 = this.ACC;
-        this.ACC += num1 + this.flags.carry;
-        //Wrap ACC and set/clear carry flag
-        if (this.ACC > 0xFF) {
-            this.flags.carry = true;
-            this.ACC -= 0x100;
-        }
-        else {
-            this.flags.carry = false;
-        }
-        //If the sum of two like signed terms is a diff sign, then the
-        //signed result is outside [-128, 127], so set overflow flag
-        this.flags.overflow = (num1 < 0x80 && num2 < 0x80 && this.ACC >= 0x80) ||
-            (num1 >= 0x80 && num2 >= 0x80 && this.ACC < 0x80);
+        this.updateNumStateFlags(this.ACC);
     }
 };
 opTable[0xA2] = {
@@ -137,7 +115,7 @@ opTable[0xA2] = {
     cycles: 2,
     execute: function () {
         this.X = this.nextByte();
-        this.updateFlags(this.X);
+        this.updateNumStateFlags(this.X);
     }
 };
 opTable[0xA6] = {
@@ -147,7 +125,7 @@ opTable[0xA6] = {
     execute: function () {
         let addr = this.getZPageRef();
         this.X = this.mem[addr];
-        this.updateFlags(this.X);
+        this.updateNumStateFlags(this.X);
     }
 };
 opTable[0xB6] = {
@@ -157,7 +135,7 @@ opTable[0xB6] = {
     execute: function () {
         let addr = this.getZPageRef(this.X);
         this.X = this.mem[addr];
-        this.updateFlags(this.X);
+        this.updateNumStateFlags(this.X);
     }
 };
 opTable[0xAE] = {
@@ -167,7 +145,7 @@ opTable[0xAE] = {
     execute: function () {
         let addr = this.getRef();
         this.X = this.mem[addr];
-        this.updateFlags(this.X);
+        this.updateNumStateFlags(this.X);
     }
 };
 opTable[0xBE] = {
@@ -177,7 +155,7 @@ opTable[0xBE] = {
     execute: function () {
         let addr = this.getRef(this.X);
         this.X = this.mem[addr];
-        this.updateFlags(this.X);
+        this.updateNumStateFlags(this.X);
     }
 };
 opTable[0xA0] = {
@@ -347,7 +325,7 @@ opTable[0xAA] = {
     cycles: 2,
     execute: function () {
         this.X = this.ACC;
-        this.updateFlags(this.X);
+        this.updateNumStateFlags(this.X);
     }
 };
 opTable[0xA8] = {
@@ -356,7 +334,7 @@ opTable[0xA8] = {
     cycles: 2,
     execute: function () {
         this.Y = this.ACC;
-        this.updateFlags(this.Y);
+        this.updateNumStateFlags(this.Y);
     }
 };
 opTable[0xBA] = {
@@ -365,7 +343,7 @@ opTable[0xBA] = {
     cycles: 2,
     execute: function () {
         this.X = this.SP;
-        this.updateFlags(this.X);
+        this.updateNumStateFlags(this.X);
     }
 };
 opTable[0x8A] = {
@@ -374,7 +352,7 @@ opTable[0x8A] = {
     cycles: 2,
     execute: function () {
         this.ACC = this.X;
-        this.updateFlags(this.ACC);
+        this.updateNumStateFlags(this.ACC);
     }
 };
 opTable[0x9A] = {
@@ -383,7 +361,7 @@ opTable[0x9A] = {
     cycles: 2,
     execute: function () {
         this.SP = this.X;
-        this.updateFlags(this.SP);
+        this.updateNumStateFlags(this.SP);
     }
 };
 opTable[0x98] = {
@@ -392,7 +370,88 @@ opTable[0x98] = {
     cycles: 2,
     execute: function () {
         this.ACC = this.Y;
-        this.updateFlags(this.Y);
+        this.updateNumStateFlags(this.Y);
+    }
+};
+function ADC(num) {
+    let num2 = this.ACC;
+    this.ACC += num + this.flags.carry;
+    //Wrap ACC and set/clear carry flag
+    this.ACC = this.updateCarryFlag(this.ACC);
+    ///Set/clear overflow flag
+    this.updateOverflowFlag(this.ACC, num, num2);
+    //Set/clear negative + zero flags
+    this.updateNumStateFlags(this.ACC);
+}
+opTable[0x69] = {
+    name: "ADC (imm)",
+    bytes: 2,
+    cycles: 2,
+    execute: function () {
+        ADC.bind(this).call(this.nextByte());
+    }
+};
+opTable[0x65] = {
+    name: "ADC (zpg)",
+    bytes: 2,
+    cycles: 3,
+    execute: function () {
+        let addr = this.getZPageRef();
+        ADC.bind(this).call(this.mem[addr]);
+    }
+};
+opTable[0x75] = {
+    name: "ADC (zpg, X)",
+    bytes: 2,
+    cycles: 4,
+    execute: function () {
+        let addr = this.getZPageRef(this.X);
+        ADC.bind(this).call(this.mem[addr]);
+    }
+};
+opTable[0x6D] = {
+    name: "ADC (abs)",
+    bytes: 3,
+    cycles: 4,
+    execute: function () {
+        let addr = this.getRef();
+        ADC.bind(this).call(this.mem[addr]);
+    }
+};
+opTable[0x7D] = {
+    name: "ADC (abs, X)",
+    bytes: 3,
+    cycles: 4,
+    execute: function () {
+        let addr = this.getRef(this.X);
+        ADC.bind(this).call(this.mem[addr]);
+    }
+};
+opTable[0x79] = {
+    name: "ADC (abs, Y)",
+    bytes: 3,
+    cycles: 4,
+    execute: function () {
+        let addr = this.getRef(this.Y);
+        ADC.bind(this).call(this.mem[addr]);
+    }
+};
+opTable[0x61] = {
+    name: "ADC (ind, X)",
+    bytes: 2,
+    cycles: 6,
+    execute: function () {
+        let addr = this.getIndrRef(this.X);
+        ADC.bind(this).call(this.mem[addr]);
+    }
+};
+opTable[0x71] = {
+    name: "ADC (ind, Y)",
+    bytes: 2,
+    cycles: 6,
+    execute: function () {
+        let addr = this.getIndrRef(this.Y);
+        ADC.bind(this).call(this.mem[addr]);
     }
 };
 opTable[0xEA] = {
@@ -505,9 +564,32 @@ class p6502 {
         }
         return combineHexBuff(bytes);
     }
-    static updateFlags(register) {
+    //Updates carry flag and returns wrapped numerical result
+    static updateCarryFlag(register) {
+        if (register > 0xFF) {
+            this.flags.carry = true;
+            register -= 0x100;
+        }
+        else {
+            this.flags.carry = false;
+        }
+        return register;
+    }
+    static updateZeroFlag(register) {
         this.flags.zero = (register === 0x00);
+    }
+    static updateOverflowFlag(register, num1, num2) {
+        //If the sum of two like signed terms is a diff sign, then the
+        //signed result is outside [-128, 127], so set overflow flag
+        this.flags.overflow = (num1 < 0x80 && num2 < 0x80 && this.ACC >= 0x80) ||
+            (num1 >= 0x80 && num2 >= 0x80 && this.ACC < 0x80);
+    }
+    static updateNegativeFlag(register) {
         this.flags.negative = (register > 0x7F);
+    }
+    static updateNumStateFlags(register) {
+        this.updateZeroFlag(register);
+        this.updateNegativeFlag(register);
     }
     static getRef(offset = 0) {
         let addr = this.next2Bytes() + offset;

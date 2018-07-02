@@ -118,9 +118,35 @@ class p6502 {
         return combineHexBuff(bytes);
     }
 
-    private static updateFlags(register: number) {
+    //Updates carry flag and returns wrapped numerical result
+    private static updateCarryFlag(register: number): number {
+        if (register > 0xFF) {
+            this.flags.carry = true;
+            register -= 0x100;
+        } else {
+            this.flags.carry = false;
+        }
+        return register;
+    }
+
+    private static updateZeroFlag(register: number) {
         this.flags.zero = (register === 0x00);
+    }
+
+    private static updateOverflowFlag(register: number, num1: number, num2: number) {
+        //If the sum of two like signed terms is a diff sign, then the
+        //signed result is outside [-128, 127], so set overflow flag
+        this.flags.overflow= (num1 < 0x80 && num2 < 0x80 && this.ACC >= 0x80) ||
+                              (num1 >= 0x80 && num2 >= 0x80 && this.ACC < 0x80);
+    }
+
+    private static updateNegativeFlag(register: number) {
         this.flags.negative = (register > 0x7F);
+    }
+
+    private static updateNumStateFlags(register: number) {
+        this.updateZeroFlag(register);
+        this.updateNegativeFlag(register);
     }
 
     private static getRef(offset: number = 0): number {
