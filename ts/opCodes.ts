@@ -293,6 +293,24 @@ opTable[0x99] = {
         this.mem[addr] = this.ACC;
     }
 }
+opTable[0x81] = {
+    name: "STA (ind, X)",
+    bytes: 2,
+    cycles: 6,
+    execute: function() {
+        let addr = this.getIndrRef(this.X);
+        this.mem[addr] = this.ACC;
+    }
+}
+opTable[0x91] = {
+    name: "STA (ind, Y)",
+    bytes: 2,
+    cycles: 5,
+    execute: function() {
+        let addr = this.getIndrRef(this.Y);
+        this.mem[addr] = this.ACC;
+    }
+}
 
 opTable[0xEA] = {
     name: "NOP", //No operation
