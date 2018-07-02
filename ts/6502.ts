@@ -118,17 +118,6 @@ class p6502 {
         return combineHexBuff(bytes);
     }
 
-    //Updates carry flag and returns wrapped numerical result
-    private static updateCarryFlag(register: number): number {
-        if (register > 0xFF) {
-            this.flags.carry = true;
-            register -= 0x100;
-        } else {
-            this.flags.carry = false;
-        }
-        return register;
-    }
-
     private static updateZeroFlag(register: number) {
         this.flags.zero = (register === 0x00);
     }

@@ -393,7 +393,12 @@ function ADC(num: number) {
     let num2 = this.ACC;
     this.ACC += num + this.flags.carry;
     //Wrap ACC and set/clear carry flag
-    this.ACC = this.updateCarryFlag(this.ACC);
+    if (this.ACC > 0xFF) {
+        this.flags.carry = true;
+        this.ACC -= 0x100;
+    } else {
+        this.flags.carry = false;
+    }
     ///Set/clear overflow flag
     this.updateOverflowFlag(this.ACC, num, num2);
     //Set/clear negative + zero flags
@@ -471,84 +476,90 @@ opTable[0x71] = {
     }
 }
 
+function SBC(num: number) {
+    let num2 = this.ACC;
+    this.ACC -= num + this.flags.carry;
+    //Wrap ACC and set/clear carry flag
+    if (this.ACC < 0x00) {
+        this.flags.carry = true;
+        this.ACC += 0x100;
+    } else {
+        this.flags.carry = false;
+    }
+    ///Set/clear overflow flag
+    this.updateOverflowFlag(this.ACC, num, num2);
+    //Set/clear negative + zero flags
+    this.updateNumStateFlags(this.ACC);
+}
 opTable[0xE9] = {
-    name: "SUB (imm)",
+    name: "SBC (imm)",
     bytes: 2,
     cycles: 2,
     execute: function() {
-        let num = this.nextByte();
-        num = (num) ^ 0xFF; //Flip the sign
-        ADC.bind(this).call(this);
+        SBC.bind(this).call(this.nextByte());
     }
 }
 opTable[0xE5] = {
-    name: "SUB (zpg)",
+    name: "SBC (zpg)",
     bytes: 2,
     cycles: 3,
     execute: function() {
         let num = this.mem[this.getZPageRef()];
-        num = (num) ^ 0xFF; //Flip the sign
-        ADC.bind(this).call(num);
+        SBC.bind(this).call(num);
     }
 }
 opTable[0xF5] = {
-    name: "SUB (zpg, X)",
+    name: "SBC (zpg, X)",
     bytes: 2,
     cycles: 4,
     execute: function() {
         let num = this.mem[this.getZPageRef(this.X)];
-        num = (num) ^ 0xFF; //Flip the sign
-        ADC.bind(this).call(num);
+        SBC.bind(this).call(num);
     }
 }
 opTable[0xED] = {
-    name: "SUB (abs)",
+    name: "SBC (abs)",
     bytes: 3,
     cycles: 4,
     execute: function() {
         let num = this.mem[this.getRef()];
-        num = (num) ^ 0xFF; //Flip the sign
-        ADC.bind(this).call(num);
+        SBC.bind(this).call(num);
     }
 }
 opTable[0xFD] = {
-    name: "SUB (abs, X)",
+    name: "SBC (abs, X)",
     bytes: 3,
     cycles: 4,
     execute: function() {
         let num = this.mem[this.getRef(this.X)];
-        num = (num) ^ 0xFF; //Flip the sign
-        ADC.bind(this).call(num);
+        SBC.bind(this).call(num);
     }
 }
 opTable[0xF9] = {
-    name: "SUB (abs, Y)",
+    name: "SBC (abs, Y)",
     bytes: 3,
     cycles: 4,
     execute: function() {
         let num = this.mem[this.getRef(this.Y)];
-        num = (num) ^ 0xFF; //Flip the sign
-        ADC.bind(this).call(num);
+        SBC.bind(this).call(num);
     }
 }
 opTable[0xE1] = {
-    name: "SUB (ind, X)",
+    name: "SBC (ind, X)",
     bytes: 2,
     cycles: 6,
     execute: function() {
         let num = this.mem[this.getIndrRef(this.X)];
-        num = (num) ^ 0xFF; //Flip the sign
-        ADC.bind(this).call(num);
+        SBC.bind(this).call(num);
     }
 }
 opTable[0xF1] = {
-    name: "SUB (ind, Y)",
+    name: "SBC (ind, Y)",
     bytes: 2,
     cycles: 6,
     execute: function() {
         let num = this.mem[this.getIndrRef(this.Y)];
-        num = (num) ^ 0xFF; //Flip the sign
-        ADC.bind(this).call(num);
+        SBC.bind(this).call(num);
     }
 }
 
