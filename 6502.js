@@ -108,16 +108,6 @@ opTable[0xA1] = {
         this.updateFlags(this.ACC);
     }
 };
-opTable[0x8D] = {
-    name: "STA",
-    bytes: 3,
-    cycles: 4,
-    execute: function () {
-        let addr = this.getRef();
-        this.mem[addr] = this.ACC;
-        this.updateFlags(this.ACC);
-    }
-};
 opTable[0x6D] = {
     name: "ADC",
     bytes: 3,
@@ -295,6 +285,114 @@ opTable[0x91] = {
     execute: function () {
         let addr = this.getIndrRef(this.Y);
         this.mem[addr] = this.ACC;
+    }
+};
+opTable[0x86] = {
+    name: "STX (zpg)",
+    bytes: 2,
+    cycles: 3,
+    execute: function () {
+        let addr = this.getZPageRef();
+        this.mem[addr] = this.X;
+    }
+};
+opTable[0x96] = {
+    name: "STX (zpg, Y)",
+    bytes: 2,
+    cycles: 4,
+    execute: function () {
+        let addr = this.getZPageRef(this.Y);
+        this.mem[addr] = this.X;
+    }
+};
+opTable[0x8E] = {
+    name: "STX (abs)",
+    bytes: 3,
+    cycles: 4,
+    execute: function () {
+        let addr = this.getRef();
+        this.mem[addr] = this.X;
+    }
+};
+opTable[0x84] = {
+    name: "STY (zpg)",
+    bytes: 2,
+    cycles: 3,
+    execute: function () {
+        let addr = this.getZPageRef();
+        this.mem[addr] = this.Y;
+    }
+};
+opTable[0x94] = {
+    name: "STY (zpg, Y)",
+    bytes: 2,
+    cycles: 4,
+    execute: function () {
+        let addr = this.getZPageRef(this.X);
+        this.mem[addr] = this.Y;
+    }
+};
+opTable[0x8C] = {
+    name: "STY (abs)",
+    bytes: 2,
+    cycles: 4,
+    execute: function () {
+        let addr = this.getRef();
+        this.mem[addr] = this.Y;
+    }
+};
+opTable[0xAA] = {
+    name: "TAX",
+    bytes: 1,
+    cycles: 2,
+    execute: function () {
+        this.X = this.ACC;
+        this.updateFlags(this.X);
+    }
+};
+opTable[0xA8] = {
+    name: "TAY",
+    bytes: 1,
+    cycles: 2,
+    execute: function () {
+        this.Y = this.ACC;
+        this.updateFlags(this.Y);
+    }
+};
+opTable[0xBA] = {
+    name: "TSX",
+    bytes: 1,
+    cycles: 2,
+    execute: function () {
+        this.X = this.SP;
+        this.updateFlags(this.X);
+    }
+};
+opTable[0x8A] = {
+    name: "TXA",
+    bytes: 1,
+    cycles: 2,
+    execute: function () {
+        this.ACC = this.X;
+        this.updateFlags(this.ACC);
+    }
+};
+opTable[0x9A] = {
+    name: "TXS",
+    bytes: 1,
+    cycles: 2,
+    execute: function () {
+        this.SP = this.X;
+        this.updateFlags(this.SP);
+    }
+};
+opTable[0x98] = {
+    name: "TYA",
+    bytes: 1,
+    cycles: 2,
+    execute: function () {
+        this.ACC = this.Y;
+        this.updateFlags(this.Y);
     }
 };
 opTable[0xEA] = {
