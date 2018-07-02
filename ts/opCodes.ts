@@ -82,7 +82,7 @@ opTable[0xA5] = {
     bytes: 2,
     cycles: 3,
     execute: function() {
-        let addr = combineHex(0x00, this.nextByte());
+        let addr = this.getZPageRef();
         this.ACC = this.mem[addr];
         this.updateFlags(this.ACC);
     }
@@ -92,7 +92,7 @@ opTable[0xB5] = {
     bytes: 2,
     cycles: 4,
     execute: function() {
-        let addr = this.nextByte() + this.X;
+        let addr = this.getZPageRef(this.X);
         this.ACC = this.mem[addr];
         this.updateFlags(this.ACC);
     }
@@ -128,6 +128,7 @@ opTable[0x8D] = {
         this.updateFlags(this.ACC);
     }
 }
+
 
 opTable[0x6D] = {
     name: "ADC", //Add contents at memory location to ACC
@@ -166,7 +167,7 @@ opTable[0xA6] = {
     bytes: 2,
     cycles: 3,
     execute: function() {
-        let addr = this.nextByte();
+        let addr = this.getZPageRef();
         this.X = this.mem[addr];
         this.updateFlags(this.X);
     }
@@ -176,7 +177,7 @@ opTable[0xB6] = {
     bytes: 2,
     cycles: 4,
     execute: function() {
-        let addr = this.nextByte() + this.X;
+        let addr = this.getZPageRef(this.X);
         this.X = this.mem[addr];
         this.updateFlags(this.X);
     }
@@ -215,7 +216,7 @@ opTable[0xA4] = {
     bytes: 2,
     cycles: 3,
     execute: function() {
-        let addr = this.nextByte();
+        let addr = this.getZPageRef();
         this.Y = this.mem[addr];
     }
 }
@@ -224,7 +225,7 @@ opTable[0xB4] = {
     bytes: 2,
     cycles: 4,
     execute: function() {
-        let addr = this.nextByte() + this.X;
+        let addr = this.getZPageRef(this.X);
         this.Y = this.mem[addr];
     }
 }
@@ -252,7 +253,7 @@ opTable[0x85] = {
     bytes: 2,
     cycles: 3,
     execute: function() {
-        let addr = this.nextByte();
+        let addr = this.getZPageRef();
         this.mem[addr] = this.ACC;
     }
 }
@@ -261,7 +262,7 @@ opTable[0x95] = {
     bytes: 2,
     cycles: 4,
     execute: function() {
-        let addr = this.nextByte() + this.X;
+        let addr = this.getZPageRef(this.X);
         this.mem[addr] = this.ACC;
     }
 }
