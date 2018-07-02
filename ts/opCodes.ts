@@ -713,3 +713,61 @@ opTable[0x88] = {
         this.updateNumStateFlags(this.Y);
     }
 }
+
+opTable[0x18] = {
+    name: "CLC",
+    bytes: 1,
+    cycles: 2,
+    execute: function() {
+        this.flags.carry = false;
+    }
+}
+opTable[0xD8] = {
+    name: "CLD",
+    bytes: 1,
+    cycles: 2,
+    execute: function() {
+        this.flags.decimalMode = false;
+    }
+}
+opTable[0xB8] = {
+    name: "CLV",
+    bytes: 1,
+    cycles: 2,
+    execute: function() {
+        this.flags.overflow = false;
+    }
+}
+opTable[0x58] = {
+    name: "CLI",
+    bytes: 1,
+    cycles: 2,
+    execute: function() {
+        this.flags.interruptDisable = false;
+    }
+}
+
+opTable[0x38] = {
+    name: "SEC",
+    bytes: 1,
+    cycles: 2,
+    execute: function() {
+        this.flags.carry = true;
+    }
+}
+opTable[0xF8] = {
+    name: "SED",
+    bytes: 1,
+    cycles: 2,
+    execute: function() {
+        this.flags.decimalMode = true;
+    }
+}
+opTable[0x78] = {
+    name: "SEI",
+    bytes: 1,
+    cycles: 2,
+    execute: function() {
+        this.flags.interruptDisable = true;
+    }
+}
