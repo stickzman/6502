@@ -1132,6 +1132,34 @@ opTable[0x1E] = {
         this.updateNumStateFlags(this.mem[addr]);
     }
 };
+opTable[0x24] = {
+    name: "BIT (zpg)",
+    bytes: 2,
+    cycles: 3,
+    execute: function () {
+        let addr = this.getZPageRef();
+        let res = this.ACC & this.mem[addr];
+        this.flags.zero = (res == 0x00);
+        let mask = 1 << 7; //7th bit mask
+        this.flags.negative = ((this.mem[addr] & mask) != 0);
+        mask = 1 << 6; //6th bit mask
+        this.flags.overflow = ((this.mem[addr] & mask) != 0);
+    }
+};
+opTable[0x2C] = {
+    name: "BIT (abs)",
+    bytes: 3,
+    cycles: 4,
+    execute: function () {
+        let addr = this.getRef();
+        let res = this.ACC & this.mem[addr];
+        this.flags.zero = (res == 0x00);
+        let mask = 1 << 7; //7th bit mask
+        this.flags.negative = ((this.mem[addr] & mask) != 0);
+        mask = 1 << 6; //6th bit mask
+        this.flags.overflow = ((this.mem[addr] & mask) != 0);
+    }
+};
 /// <reference path="opCodes.ts" />
 class p6502 {
     static boot() {
