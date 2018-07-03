@@ -857,6 +857,70 @@ opTable[0xCC] = {
         CMP(this.mem[this.getRef()], this.Y);
     }
 };
+opTable[0x29] = {
+    name: "AND (imm)",
+    bytes: 2,
+    cycles: 2,
+    execute: function () {
+        this.ACC = this.ACC & this.nextByte();
+    }
+};
+opTable[0x25] = {
+    name: "AND (zpg)",
+    bytes: 2,
+    cycles: 3,
+    execute: function () {
+        this.ACC = this.ACC & this.mem[this.getZPageRef()];
+    }
+};
+opTable[0x35] = {
+    name: "AND (zpg, X)",
+    bytes: 2,
+    cycles: 4,
+    execute: function () {
+        this.ACC = this.ACC & this.mem[this.getZPageRef(this.X)];
+    }
+};
+opTable[0x2D] = {
+    name: "AND (abs)",
+    bytes: 3,
+    cycles: 4,
+    execute: function () {
+        this.ACC = this.ACC & this.mem[this.getRef()];
+    }
+};
+opTable[0x3D] = {
+    name: "AND (abs, X)",
+    bytes: 3,
+    cycles: 4,
+    execute: function () {
+        this.ACC = this.ACC & this.mem[this.getRef(this.X)];
+    }
+};
+opTable[0x39] = {
+    name: "AND (abs, Y)",
+    bytes: 3,
+    cycles: 4,
+    execute: function () {
+        this.ACC = this.ACC & this.mem[this.getRef(this.Y)];
+    }
+};
+opTable[0x21] = {
+    name: "AND (ind, X)",
+    bytes: 2,
+    cycles: 6,
+    execute: function () {
+        this.ACC = this.ACC & this.mem[this.getRef(this.X)];
+    }
+};
+opTable[0x31] = {
+    name: "AND (ind, Y)",
+    bytes: 2,
+    cycles: 5,
+    execute: function () {
+        this.ACC = this.ACC & this.mem[this.getRef(this.Y)];
+    }
+};
 /// <reference path="opCodes.ts" />
 class p6502 {
     static boot() {
