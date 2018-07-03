@@ -118,10 +118,6 @@ class p6502 {
         return combineHexBuff(bytes);
     }
 
-    private static updateZeroFlag(register: number) {
-        this.flags.zero = (register === 0x00);
-    }
-
     private static updateOverflowFlag(register: number, num1: number, num2: number) {
         //If the sum of two like signed terms is a diff sign, then the
         //signed result is outside [-128, 127], so set overflow flag
@@ -134,7 +130,7 @@ class p6502 {
     }
 
     private static updateNumStateFlags(register: number) {
-        this.updateZeroFlag(register);
+        this.flags.zero = (register === 0x00);
         this.updateNegativeFlag(register);
     }
 

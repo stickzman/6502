@@ -570,16 +570,6 @@ opTable[0xEA] = {
     execute: function() { }
 }
 
-opTable[0xEC] = {
-    name: "CPX", //Compare byte in memory to X register, sets zero if equal
-    bytes: 3,
-    cycles: 4,
-    execute: function() {
-        let addr = this.getRef();
-        this.flags.zero = (this.mem[addr] == this.X) ? true : false;
-    }
-}
-
 opTable[0xD0] = {
     name: "BNE", //Branch Not Equal, branch if zero flag is cleared
     bytes: 2,
@@ -769,5 +759,125 @@ opTable[0x78] = {
     cycles: 2,
     execute: function() {
         this.flags.interruptDisable = true;
+    }
+}
+
+function CMP(num: number, register: number) {
+    this.flags.zero = (register == num);
+    let res = register - num;
+    res += (res < 0) ? 0x10000 : 0;
+    this.updateNegativeFlag(res);
+    this.flags.carry = (register >= num);
+}
+opTable[0xC9] = {
+    name: "CMP (imm)",
+    bytes: 2,
+    cycles: 2,
+    execute: function() {
+        CMP(this.nextByte(), this.ACC);
+    }
+}
+opTable[0xC5] = {
+    name: "CMP (zpg)",
+    bytes: 2,
+    cycles: 3,
+    execute: function() {
+        CMP(this.mem[this.getZPageRef()], this.ACC);
+    }
+}
+opTable[0xD5] = {
+    name: "CMP (zpg, X)",
+    bytes: 2,
+    cycles: 4,
+    execute: function() {
+        CMP(this.mem[this.getZPageRef(this.X)], this.ACC);
+    }
+}
+opTable[0xCD] = {
+    name: "CMP (abs)",
+    bytes: 3,
+    cycles: 4,
+    execute: function() {
+        CMP(this.mem[this.getRef()], this.ACC);
+    }
+}
+opTable[0xDD] = {
+    name: "CMP (abs, X)",
+    bytes: 3,
+    cycles: 4,
+    execute: function() {
+        CMP(this.mem[this.getRef(this.X)], this.ACC);
+    }
+}
+opTable[0xD9] = {
+    name: "CMP (abs, Y)",
+    bytes: 3,
+    cycles: 4,
+    execute: function() {
+        CMP(this.mem[this.getRef(this.Y)], this.ACC);
+    }
+}
+opTable[0xC1] = {
+    name: "CMP (ind, X)",
+    bytes: 2,
+    cycles: 6,
+    execute: function() {
+        CMP(this.mem[this.getIndrRef(this.X)], this.ACC);
+    }
+}
+opTable[0xD1] = {
+    name: "CMP (ind, Y)",
+    bytes: 2,
+    cycles: 5,
+    execute: function() {
+        CMP(this.mem[this.getIndrRef(this.Y)], this.ACC);
+    }
+}
+opTable[0xE0] = {
+    name: "CPX (imm)",
+    bytes: 2,
+    cycles: 2,
+    execute: function() {
+        CMP(this.nextByte(), this.X);
+    }
+}
+opTable[0xE4] = {
+    name: "CPX (zpg)",
+    bytes: 2,
+    cycles: 3,
+    execute: function() {
+        CMP(this.mem[this.getZPageRef()], this.X);
+    }
+}
+opTable[0xEC] = {
+    name: "CPX (abs)",
+    bytes: 3,
+    cycles: 4,
+    execute: function() {
+        CMP(this.mem[this.getRef()], this.X);
+    }
+}
+opTable[0xC0] = {
+    name: "CPY (imm)",
+    bytes: 2,
+    cycles: 2,
+    execute: function() {
+        CMP(this.nextByte(), this.Y);
+    }
+}
+opTable[0xC4] = {
+    name: "CPY (zpg)",
+    bytes: 2,
+    cycles: 3,
+    execute: function() {
+        CMP(this.mem[this.getZPageRef()], this.Y);
+    }
+}
+opTable[0xCC] = {
+    name: "CPY (abs)",
+    bytes: 3,
+    cycles: 4,
+    execute: function() {
+        CMP(this.mem[this.getRef()], this.Y);
     }
 }
