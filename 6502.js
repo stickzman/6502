@@ -1218,12 +1218,14 @@ opTable[0x2A] = {
     cycles: 2,
     execute: function () {
         //Store current carry bit for later
-        let addBit = (this.flags.carry) ? 0x80 : 0;
-        //Move LSB to carry flag
-        this.flags.carry = (this.ACC % 2 == 0);
-        //Shift number one place to the left
-        this.ACC = this.ACC >> 1;
-        //Make the prev carry bit the MSB
+        let addBit = this.flags.carry;
+        //Move MSB to carry flag
+        this.flags.carry = (this.ACC >= 0x80);
+        //Shift one place to the left
+        this.ACC = this.ACC << 1;
+        //Drop MSB
+        this.ACC -= (this.flags.carry) ? 0x100 : 0;
+        //Make the prev carry bit the LSB
         this.ACC += addBit;
         //Update flags
         this.updateNumStateFlags(this.ACC);
@@ -1235,6 +1237,79 @@ opTable[0x26] = {
     cycles: 5,
     execute: function () {
         let addr = this.getZPageRef();
+        let addBit = this.flags.carry;
+        this.flags.carry = (this.mem[addr] >= 0x80);
+        this.mem[addr] = this.mem[addr] << 1;
+        this.mem[addr] -= (this.flags.carry) ? 0x100 : 0;
+        this.mem[addr] += addBit;
+        this.updateNumStateFlags(this.mem[addr]);
+    }
+};
+opTable[0x36] = {
+    name: "ROL (zpg, X)",
+    bytes: 2,
+    cycles: 6,
+    execute: function () {
+        let addr = this.getZPageRef(this.X);
+        let addBit = this.flags.carry;
+        this.flags.carry = (this.mem[addr] >= 0x80);
+        this.mem[addr] = this.mem[addr] << 1;
+        this.mem[addr] -= (this.flags.carry) ? 0x100 : 0;
+        this.mem[addr] += addBit;
+        this.updateNumStateFlags(this.mem[addr]);
+    }
+};
+opTable[0x2E] = {
+    name: "ROL (abs)",
+    bytes: 3,
+    cycles: 6,
+    execute: function () {
+        let addr = this.getRef();
+        let addBit = this.flags.carry;
+        this.flags.carry = (this.mem[addr] >= 0x80);
+        this.mem[addr] = this.mem[addr] << 1;
+        this.mem[addr] -= (this.flags.carry) ? 0x100 : 0;
+        this.mem[addr] += addBit;
+        this.updateNumStateFlags(this.mem[addr]);
+    }
+};
+opTable[0x3E] = {
+    name: "ROL (abs, X)",
+    bytes: 3,
+    cycles: 7,
+    execute: function () {
+        let addr = this.getRef(this.X);
+        let addBit = this.flags.carry;
+        this.flags.carry = (this.mem[addr] >= 0x80);
+        this.mem[addr] = this.mem[addr] << 1;
+        this.mem[addr] -= (this.flags.carry) ? 0x100 : 0;
+        this.mem[addr] += addBit;
+        this.updateNumStateFlags(this.mem[addr]);
+    }
+};
+opTable[0x6A] = {
+    name: "ROR",
+    bytes: 1,
+    cycles: 2,
+    execute: function () {
+        //Store current carry bit for later
+        let addBit = (this.flags.carry) ? 0x80 : 0;
+        //Move LSB to carry flag
+        this.flags.carry = (this.ACC % 2 == 0);
+        //Shift number one place to the right
+        this.ACC = this.ACC >> 1;
+        //Make the prev carry bit the MSB
+        this.ACC += addBit;
+        //Update flags
+        this.updateNumStateFlags(this.ACC);
+    }
+};
+opTable[0x66] = {
+    name: "ROR (zpg)",
+    bytes: 2,
+    cycles: 5,
+    execute: function () {
+        let addr = this.getZPageRef();
         let addBit = (this.flags.carry) ? 0x80 : 0;
         this.flags.carry = (this.mem[addr] % 2 == 0);
         this.mem[addr] = this.mem[addr] >> 1;
@@ -1242,8 +1317,8 @@ opTable[0x26] = {
         this.updateNumStateFlags(this.mem[addr]);
     }
 };
-opTable[0x36] = {
-    name: "ROL (zpg, X)",
+opTable[0x76] = {
+    name: "ROR (zpg, X)",
     bytes: 2,
     cycles: 6,
     execute: function () {
@@ -1255,8 +1330,8 @@ opTable[0x36] = {
         this.updateNumStateFlags(this.mem[addr]);
     }
 };
-opTable[0x2E] = {
-    name: "ROL (abs)",
+opTable[0x6E] = {
+    name: "ROR (abs)",
     bytes: 3,
     cycles: 6,
     execute: function () {
@@ -1268,8 +1343,8 @@ opTable[0x2E] = {
         this.updateNumStateFlags(this.mem[addr]);
     }
 };
-opTable[0x3E] = {
-    name: "ROL (abs, X)",
+opTable[0x7E] = {
+    name: "ROR (abs, X)",
     bytes: 3,
     cycles: 7,
     execute: function () {
