@@ -863,6 +863,7 @@ opTable[0x29] = {
     cycles: 2,
     execute: function () {
         this.ACC = this.ACC & this.nextByte();
+        this.updateNumStateFlags(this.ACC);
     }
 };
 opTable[0x25] = {
@@ -871,6 +872,7 @@ opTable[0x25] = {
     cycles: 3,
     execute: function () {
         this.ACC = this.ACC & this.mem[this.getZPageRef()];
+        this.updateNumStateFlags(this.ACC);
     }
 };
 opTable[0x35] = {
@@ -879,6 +881,7 @@ opTable[0x35] = {
     cycles: 4,
     execute: function () {
         this.ACC = this.ACC & this.mem[this.getZPageRef(this.X)];
+        this.updateNumStateFlags(this.ACC);
     }
 };
 opTable[0x2D] = {
@@ -887,6 +890,7 @@ opTable[0x2D] = {
     cycles: 4,
     execute: function () {
         this.ACC = this.ACC & this.mem[this.getRef()];
+        this.updateNumStateFlags(this.ACC);
     }
 };
 opTable[0x3D] = {
@@ -895,6 +899,7 @@ opTable[0x3D] = {
     cycles: 4,
     execute: function () {
         this.ACC = this.ACC & this.mem[this.getRef(this.X)];
+        this.updateNumStateFlags(this.ACC);
     }
 };
 opTable[0x39] = {
@@ -903,6 +908,7 @@ opTable[0x39] = {
     cycles: 4,
     execute: function () {
         this.ACC = this.ACC & this.mem[this.getRef(this.Y)];
+        this.updateNumStateFlags(this.ACC);
     }
 };
 opTable[0x21] = {
@@ -911,6 +917,7 @@ opTable[0x21] = {
     cycles: 6,
     execute: function () {
         this.ACC = this.ACC & this.mem[this.getRef(this.X)];
+        this.updateNumStateFlags(this.ACC);
     }
 };
 opTable[0x31] = {
@@ -919,6 +926,151 @@ opTable[0x31] = {
     cycles: 5,
     execute: function () {
         this.ACC = this.ACC & this.mem[this.getRef(this.Y)];
+        this.updateNumStateFlags(this.ACC);
+    }
+};
+opTable[0x09] = {
+    name: "ORA (imm)",
+    bytes: 2,
+    cycles: 2,
+    execute: function () {
+        this.ACC = this.ACC | this.nextByte();
+        this.updateNumStateFlags(this.ACC);
+    }
+};
+opTable[0x05] = {
+    name: "ORA (zpg)",
+    bytes: 2,
+    cycles: 3,
+    execute: function () {
+        this.ACC = this.ACC | this.mem[this.getZPageRef()];
+        this.updateNumStateFlags(this.ACC);
+    }
+};
+opTable[0x15] = {
+    name: "ORA (zpg, X)",
+    bytes: 2,
+    cycles: 4,
+    execute: function () {
+        this.ACC = this.ACC | this.mem[this.getZPageRef(this.X)];
+        this.updateNumStateFlags(this.ACC);
+    }
+};
+opTable[0x0D] = {
+    name: "ORA (abs)",
+    bytes: 3,
+    cycles: 4,
+    execute: function () {
+        this.ACC = this.ACC | this.mem[this.getRef()];
+        this.updateNumStateFlags(this.ACC);
+    }
+};
+opTable[0x1D] = {
+    name: "ORA (abs, X)",
+    bytes: 3,
+    cycles: 4,
+    execute: function () {
+        this.ACC = this.ACC | this.mem[this.getRef(this.X)];
+        this.updateNumStateFlags(this.ACC);
+    }
+};
+opTable[0x19] = {
+    name: "ORA (abs, Y)",
+    bytes: 3,
+    cycles: 4,
+    execute: function () {
+        this.ACC = this.ACC | this.mem[this.getRef(this.Y)];
+        this.updateNumStateFlags(this.ACC);
+    }
+};
+opTable[0x01] = {
+    name: "ORA (ind, X)",
+    bytes: 2,
+    cycles: 6,
+    execute: function () {
+        this.ACC = this.ACC | this.mem[this.getRef(this.X)];
+        this.updateNumStateFlags(this.ACC);
+    }
+};
+opTable[0x11] = {
+    name: "ORA (ind, Y)",
+    bytes: 2,
+    cycles: 5,
+    execute: function () {
+        this.ACC = this.ACC | this.mem[this.getRef(this.Y)];
+        this.updateNumStateFlags(this.ACC);
+    }
+};
+opTable[0x49] = {
+    name: "EOR (imm)",
+    bytes: 2,
+    cycles: 2,
+    execute: function () {
+        this.ACC = this.ACC ^ this.nextByte();
+        this.updateNumStateFlags(this.ACC);
+    }
+};
+opTable[0x45] = {
+    name: "EOR (zpg)",
+    bytes: 2,
+    cycles: 3,
+    execute: function () {
+        this.ACC = this.ACC ^ this.mem[this.getZPageRef()];
+        this.updateNumStateFlags(this.ACC);
+    }
+};
+opTable[0x55] = {
+    name: "EOR (zpg, X)",
+    bytes: 2,
+    cycles: 4,
+    execute: function () {
+        this.ACC = this.ACC ^ this.mem[this.getZPageRef(this.X)];
+        this.updateNumStateFlags(this.ACC);
+    }
+};
+opTable[0x4D] = {
+    name: "EOR (abs)",
+    bytes: 3,
+    cycles: 4,
+    execute: function () {
+        this.ACC = this.ACC ^ this.mem[this.getRef()];
+        this.updateNumStateFlags(this.ACC);
+    }
+};
+opTable[0x5D] = {
+    name: "EOR (abs, X)",
+    bytes: 3,
+    cycles: 4,
+    execute: function () {
+        this.ACC = this.ACC ^ this.mem[this.getRef(this.X)];
+        this.updateNumStateFlags(this.ACC);
+    }
+};
+opTable[0x59] = {
+    name: "EOR (abs, Y)",
+    bytes: 3,
+    cycles: 4,
+    execute: function () {
+        this.ACC = this.ACC ^ this.mem[this.getRef(this.Y)];
+        this.updateNumStateFlags(this.ACC);
+    }
+};
+opTable[0x41] = {
+    name: "EOR (ind, X)",
+    bytes: 2,
+    cycles: 6,
+    execute: function () {
+        this.ACC = this.ACC ^ this.mem[this.getRef(this.X)];
+        this.updateNumStateFlags(this.ACC);
+    }
+};
+opTable[0x51] = {
+    name: "EOR (ind, Y)",
+    bytes: 2,
+    cycles: 5,
+    execute: function () {
+        this.ACC = this.ACC ^ this.mem[this.getRef(this.Y)];
+        this.updateNumStateFlags(this.ACC);
     }
 };
 /// <reference path="opCodes.ts" />
