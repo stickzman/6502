@@ -774,7 +774,7 @@ opTable[0xC9] = {
     bytes: 2,
     cycles: 2,
     execute: function() {
-        CMP(this.nextByte(), this.ACC);
+        CMP.bind(this).call(this.nextByte(), this.ACC);
     }
 }
 opTable[0xC5] = {
@@ -782,7 +782,7 @@ opTable[0xC5] = {
     bytes: 2,
     cycles: 3,
     execute: function() {
-        CMP(this.mem[this.getZPageRef()], this.ACC);
+        CMP.bind(this).call(this.mem[this.getZPageRef()], this.ACC);
     }
 }
 opTable[0xD5] = {
@@ -790,7 +790,7 @@ opTable[0xD5] = {
     bytes: 2,
     cycles: 4,
     execute: function() {
-        CMP(this.mem[this.getZPageRef(this.X)], this.ACC);
+        CMP.bind(this).call(this.mem[this.getZPageRef(this.X)], this.ACC);
     }
 }
 opTable[0xCD] = {
@@ -798,7 +798,7 @@ opTable[0xCD] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        CMP(this.mem[this.getRef()], this.ACC);
+        CMP.bind(this).call(this.mem[this.getRef()], this.ACC);
     }
 }
 opTable[0xDD] = {
@@ -806,7 +806,7 @@ opTable[0xDD] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        CMP(this.mem[this.getRef(this.X)], this.ACC);
+        CMP.bind(this).call(this.mem[this.getRef(this.X)], this.ACC);
     }
 }
 opTable[0xD9] = {
@@ -814,7 +814,7 @@ opTable[0xD9] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        CMP(this.mem[this.getRef(this.Y)], this.ACC);
+        CMP.bind(this).call(this.mem[this.getRef(this.Y)], this.ACC);
     }
 }
 opTable[0xC1] = {
@@ -822,7 +822,7 @@ opTable[0xC1] = {
     bytes: 2,
     cycles: 6,
     execute: function() {
-        CMP(this.mem[this.getIndrRef(this.X)], this.ACC);
+        CMP.bind(this).call(this.mem[this.getIndrRef(this.X)], this.ACC);
     }
 }
 opTable[0xD1] = {
@@ -830,7 +830,7 @@ opTable[0xD1] = {
     bytes: 2,
     cycles: 5,
     execute: function() {
-        CMP(this.mem[this.getIndrRef(this.Y)], this.ACC);
+        CMP.bind(this).call(this.mem[this.getIndrRef(this.Y)], this.ACC);
     }
 }
 opTable[0xE0] = {
@@ -838,7 +838,7 @@ opTable[0xE0] = {
     bytes: 2,
     cycles: 2,
     execute: function() {
-        CMP(this.nextByte(), this.X);
+        CMP.bind(this).call(this.nextByte(), this.X);
     }
 }
 opTable[0xE4] = {
@@ -846,7 +846,7 @@ opTable[0xE4] = {
     bytes: 2,
     cycles: 3,
     execute: function() {
-        CMP(this.mem[this.getZPageRef()], this.X);
+        CMP.bind(this).call(this.mem[this.getZPageRef()], this.X);
     }
 }
 opTable[0xEC] = {
@@ -854,7 +854,7 @@ opTable[0xEC] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        CMP(this.mem[this.getRef()], this.X);
+        CMP.bind(this).call(this.mem[this.getRef()], this.X);
     }
 }
 opTable[0xC0] = {
@@ -862,7 +862,7 @@ opTable[0xC0] = {
     bytes: 2,
     cycles: 2,
     execute: function() {
-        CMP(this.nextByte(), this.Y);
+        CMP.bind(this).call(this.nextByte(), this.Y);
     }
 }
 opTable[0xC4] = {
@@ -870,7 +870,7 @@ opTable[0xC4] = {
     bytes: 2,
     cycles: 3,
     execute: function() {
-        CMP(this.mem[this.getZPageRef()], this.Y);
+        CMP.bind(this).call(this.mem[this.getZPageRef()], this.Y);
     }
 }
 opTable[0xCC] = {
@@ -878,7 +878,7 @@ opTable[0xCC] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        CMP(this.mem[this.getRef()], this.Y);
+        CMP.bind(this).call(this.mem[this.getRef()], this.Y);
     }
 }
 
@@ -1098,5 +1098,65 @@ opTable[0x51] = {
     execute: function() {
         this.ACC = this.ACC ^ this.mem[this.getRef(this.Y)];
         this.updateNumStateFlags(this.ACC);
+    }
+}
+
+opTable[0x0A] = {
+    name: "ASL",
+    bytes: 1,
+    cycles: 2,
+    execute: function() {
+        this.flags.carry = (this.ACC >= 0x80);
+        this.ACC = this.ACC << 1;
+        this.ACC -= (this.flags.carry) ? 0x100 : 0;
+        this.updateNumStateFlags(this.ACC);
+    }
+}
+opTable[0x06] = {
+    name: "ASL (zpg)",
+    bytes: 2,
+    cycles: 5,
+    execute: function() {
+        let addr = this.getZPageRef();
+        this.flags.carry = (this.mem[addr] >= 0x80);
+        this.mem[addr] = this.mem[addr] << 1;
+        this.mem[addr] -= (this.flags.carry) ? 0x100 : 0;
+        this.updateNumStateFlags(this.mem[addr]);
+    }
+}
+opTable[0x16] = {
+    name: "ASL (zpg, X)",
+    bytes: 2,
+    cycles: 6,
+    execute: function() {
+        let addr = this.getZPageRef(this.X);
+        this.flags.carry = (this.mem[addr] >= 0x80);
+        this.mem[addr] = this.mem[addr] << 1;
+        this.mem[addr] -= (this.flags.carry) ? 0x100 : 0;
+        this.updateNumStateFlags(this.mem[addr]);
+    }
+}
+opTable[0x0E] = {
+    name: "ASL (abs)",
+    bytes: 3,
+    cycles: 6,
+    execute: function() {
+        let addr = this.getRef();
+        this.flags.carry = (this.mem[addr] >= 0x80);
+        this.mem[addr] = this.mem[addr] << 1;
+        this.mem[addr] -= (this.flags.carry) ? 0x100 : 0;
+        this.updateNumStateFlags(this.mem[addr]);
+    }
+}
+opTable[0x1E] = {
+    name: "ASL (abs, X)",
+    bytes: 3,
+    cycles: 7,
+    execute: function() {
+        let addr = this.getRef(this.X);
+        this.flags.carry = (this.mem[addr] >= 0x80);
+        this.mem[addr] = this.mem[addr] << 1;
+        this.mem[addr] -= (this.flags.carry) ? 0x100 : 0;
+        this.updateNumStateFlags(this.mem[addr]);
     }
 }
