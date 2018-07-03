@@ -1132,6 +1132,65 @@ opTable[0x1E] = {
         this.updateNumStateFlags(this.mem[addr]);
     }
 };
+opTable[0x4A] = {
+    name: "LSR",
+    bytes: 1,
+    cycles: 2,
+    execute: function () {
+        this.flags.carry = (this.ACC % 2 == 0);
+        this.ACC = this.ACC >> 1;
+        this.flags.zero = (this.ACC == 0);
+        this.updateNumStateFlags(this.ACC);
+    }
+};
+opTable[0x46] = {
+    name: "LSR (zpg)",
+    bytes: 2,
+    cycles: 5,
+    execute: function () {
+        let addr = this.getZPageRef();
+        this.flags.carry = (this.mem[addr] % 2 == 0);
+        this.mem[addr] = this.mem[addr] >> 1;
+        this.flags.zero = (this.mem[addr] == 0);
+        this.updateNumStateFlags(this.mem[addr]);
+    }
+};
+opTable[0x56] = {
+    name: "LSR (zpg, X)",
+    bytes: 2,
+    cycles: 6,
+    execute: function () {
+        let addr = this.getZPageRef(this.X);
+        this.flags.carry = (this.mem[addr] % 2 == 0);
+        this.mem[addr] = this.mem[addr] >> 1;
+        this.flags.zero = (this.mem[addr] == 0);
+        this.updateNumStateFlags(this.mem[addr]);
+    }
+};
+opTable[0x4E] = {
+    name: "LSR (abs)",
+    bytes: 3,
+    cycles: 6,
+    execute: function () {
+        let addr = this.getRef();
+        this.flags.carry = (this.mem[addr] % 2 == 0);
+        this.mem[addr] = this.mem[addr] >> 1;
+        this.flags.zero = (this.mem[addr] == 0);
+        this.updateNumStateFlags(this.mem[addr]);
+    }
+};
+opTable[0x5E] = {
+    name: "LSR (abs, X)",
+    bytes: 3,
+    cycles: 7,
+    execute: function () {
+        let addr = this.getRef(this.X);
+        this.flags.carry = (this.mem[addr] % 2 == 0);
+        this.mem[addr] = this.mem[addr] >> 1;
+        this.flags.zero = (this.mem[addr] == 0);
+        this.updateNumStateFlags(this.mem[addr]);
+    }
+};
 opTable[0x24] = {
     name: "BIT (zpg)",
     bytes: 2,
@@ -1140,9 +1199,8 @@ opTable[0x24] = {
         let addr = this.getZPageRef();
         let res = this.ACC & this.mem[addr];
         this.flags.zero = (res == 0x00);
-        let mask = 1 << 7; //7th bit mask
-        this.flags.negative = ((this.mem[addr] & mask) != 0);
-        mask = 1 << 6; //6th bit mask
+        this.updateNegativeFlag(this.mem[addr]);
+        let mask = 1 << 6; //6th bit mask
         this.flags.overflow = ((this.mem[addr] & mask) != 0);
     }
 };
@@ -1154,9 +1212,8 @@ opTable[0x2C] = {
         let addr = this.getRef();
         let res = this.ACC & this.mem[addr];
         this.flags.zero = (res == 0x00);
-        let mask = 1 << 7; //7th bit mask
-        this.flags.negative = ((this.mem[addr] & mask) != 0);
-        mask = 1 << 6; //6th bit mask
+        this.updateNegativeFlag(this.mem[addr]);
+        let mask = 1 << 6; //6th bit mask
         this.flags.overflow = ((this.mem[addr] & mask) != 0);
     }
 };
