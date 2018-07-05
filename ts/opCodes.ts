@@ -1442,7 +1442,7 @@ opTable[0x4C] = {
         if (this.debug) {
             console.log(`Jumping to location 0x${addr}...`);
         }
-        this.PC = addr;
+        this.PC = addr - 3;
     }
 }
 opTable[0x6C] = {
@@ -1453,6 +1453,37 @@ opTable[0x6C] = {
         let addr = this.getIndrRef();
         if (this.debug) {
             console.log(`Jumping to location 0x${addr}...`);
+        }
+        this.PC = addr - 3;
+    }
+}
+
+opTable[0x20] = {
+    name: "JSR", //Jump to Subroutine
+    bytes: 3,
+    cycles: 6,
+    execute: function() {
+        let addr = this.getRef();
+        if (this.debug) {
+            console.log(`Jumping to subroutine at 0x${addr}...`);
+        }
+        //Split PC and add each addr byte to stack
+        let bytes = splitHex(this.PC - 1);
+        this.pushStack(bytes[0]);
+        this.pushStack(bytes[1]);
+        this.PC = addr - 3;
+    }
+}
+opTable[0x60] = {
+    name: "RTS", //Return from Subroutine
+    bytes: 1,
+    cycles: 6,
+    execute: function() {
+        let loByte = this.pullStack();
+        let hiByte = this.pullStack();
+        let addr = combineHex(hiByte, loByte);
+        if (this.debug) {
+            console.log(`Return to location 0x${addr} from subroutine...`);
         }
         this.PC = addr;
     }

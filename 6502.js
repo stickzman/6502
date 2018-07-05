@@ -1417,7 +1417,7 @@ opTable[0x4C] = {
         if (this.debug) {
             console.log(`Jumping to location 0x${addr}...`);
         }
-        this.PC = addr;
+        this.PC = addr - 3;
     }
 };
 opTable[0x6C] = {
@@ -1428,6 +1428,36 @@ opTable[0x6C] = {
         let addr = this.getIndrRef();
         if (this.debug) {
             console.log(`Jumping to location 0x${addr}...`);
+        }
+        this.PC = addr - 3;
+    }
+};
+opTable[0x20] = {
+    name: "JSR",
+    bytes: 3,
+    cycles: 6,
+    execute: function () {
+        let addr = this.getRef();
+        if (this.debug) {
+            console.log(`Jumping to subroutine at 0x${addr}...`);
+        }
+        //Split PC and add each addr byte to stack
+        let bytes = splitHex(this.PC - 1);
+        this.pushStack(bytes[0]);
+        this.pushStack(bytes[1]);
+        this.PC = addr - 3;
+    }
+};
+opTable[0x60] = {
+    name: "RTS",
+    bytes: 1,
+    cycles: 6,
+    execute: function () {
+        let loByte = this.pullStack();
+        let hiByte = this.pullStack();
+        let addr = combineHex(hiByte, loByte);
+        if (this.debug) {
+            console.log(`Return to location 0x${addr} from subroutine...`);
         }
         this.PC = addr;
     }
@@ -1486,6 +1516,21 @@ class p6502 {
     static getResetVector() {
         let bytes = new Uint8Array(this.mem.slice(0xFFFC, 0xFFFE));
         return combineHexBuff(bytes.reverse());
+    }
+    static pushStack(byte) {
+        this.mem[this.SP] = byte; //Write byte to stack
+        this.SP--; //Decrement stack pointer
+        if (this.SP < 0) {
+            this.SP = 0xFF;
+        } //Wrap stack pointer, if necessary
+    }
+    static pullStack() {
+        let byte = this.mem[this.SP];
+        this.SP++;
+        if (this.SP > 0xFF) {
+            this.SP = 0;
+        }
+        return byte;
     }
     static displayState() {
         //Print Registers
@@ -1569,4 +1614,10 @@ function combineHexBuff(buff) {
 }
 function combineHex(hiByte, lowByte) {
     return (hiByte << 8) | (lowByte);
+}
+function splitHex(hex) {
+    let str = hex.toString(16).padStart(4, "0");
+    let hiByte = parseInt(str.substr(0, 2), 16);
+    let loByte = parseInt(str.substr(2), 16);
+    return [hiByte, loByte];
 }
