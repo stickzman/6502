@@ -9,27 +9,6 @@ opTable[0x00] = {
         this.flags.break = true;
     }
 };
-//ORA X,ind 0x01
-//ORA zpg   0x05
-//ASL zpg   0x06
-//PHP impl  0x08
-//ORA #     0x09
-//ASL       0x0A
-//ORA abs   0x0D
-//ASL abs   0x0E
-//BPL rel   0x10
-//ORA ind,Y 0x11
-//ORA zpg,X 0x15
-//ASL zpg,X 0x16
-//CLC impl  0x18
-//ORA abs,Y 0x19
-//ORA abs,X 0x1D
-//ASL abs,X 0x1E
-//JSR abs   0x20
-//AND X,ind 0x21
-//BIT zpg   0x24
-//AND zpg   0x25
-//ROL zpg   0x26
 opTable[0xA9] = {
     name: "LDA (imm)",
     bytes: 2,
@@ -552,19 +531,6 @@ opTable[0xEA] = {
     bytes: 1,
     cycles: 1,
     execute: function () { }
-};
-opTable[0xD0] = {
-    name: "BNE",
-    bytes: 2,
-    cycles: 3,
-    execute: function () {
-        if (!this.flags.zero) {
-            if (this.debug) {
-                console.log(`Branching ${this.nextByte()} bytes...`);
-            }
-            this.PC += this.nextByte();
-        }
-    }
 };
 opTable[0xE6] = {
     name: "INC (zpg)",
@@ -1354,6 +1320,116 @@ opTable[0x7E] = {
         this.mem[addr] = this.mem[addr] >> 1;
         this.mem[addr] += addBit;
         this.updateNumStateFlags(this.mem[addr]);
+    }
+};
+function branch() {
+    if (this.debug) {
+        console.log(`Branching ${this.nextByte()} bytes...`);
+    }
+    this.PC += this.nextByte();
+}
+opTable[0x90] = {
+    name: "BCC",
+    bytes: 2,
+    cycles: 2,
+    execute: function () {
+        if (!this.flags.carry) {
+            branch.bind(this).call();
+        }
+    }
+};
+opTable[0xB0] = {
+    name: "BCS",
+    bytes: 2,
+    cycles: 2,
+    execute: function () {
+        if (this.flags.carry) {
+            branch.bind(this).call();
+        }
+    }
+};
+opTable[0x30] = {
+    name: "BMI",
+    bytes: 2,
+    cycles: 2,
+    execute: function () {
+        if (this.flags.negative) {
+            branch.bind(this).call();
+        }
+    }
+};
+opTable[0x10] = {
+    name: "BPL",
+    bytes: 2,
+    cycles: 2,
+    execute: function () {
+        if (!this.flags.negative) {
+            branch.bind(this).call();
+        }
+    }
+};
+opTable[0xF0] = {
+    name: "BEQ",
+    bytes: 2,
+    cycles: 2,
+    execute: function () {
+        if (this.flags.zero) {
+            branch.bind(this).call();
+        }
+    }
+};
+opTable[0xD0] = {
+    name: "BNE",
+    bytes: 2,
+    cycles: 2,
+    execute: function () {
+        if (!this.flags.zero) {
+            branch.bind(this).call();
+        }
+    }
+};
+opTable[0x50] = {
+    name: "BVC",
+    bytes: 2,
+    cycles: 2,
+    execute: function () {
+        if (!this.flags.overflow) {
+            branch.bind(this).call();
+        }
+    }
+};
+opTable[0x70] = {
+    name: "BVS",
+    bytes: 2,
+    cycles: 2,
+    execute: function () {
+        if (this.flags.overflow) {
+            branch.bind(this).call();
+        }
+    }
+};
+opTable[0x4C] = {
+    name: "JMP (abs)",
+    bytes: 3,
+    cycles: 3,
+    execute: function () {
+        let addr = this.getRef();
+        if (this.debug) {
+            console.log(`Jumping to location 0x${addr}...`);
+        }
+        this.PC = addr;
+    }
+};
+opTable[0x6C] = {
+    name: "JMP (ind)",
+    bytes: 3,
+    cycles: 5,
+    execute: function () {
+        let addr = this.getIndrRef();
+        if (this.debug) {
+            console.log(`Jumping to location 0x${addr}...`);
+        }
+        this.PC = addr;
     }
 };
 /// <reference path="opCodes.ts" />
