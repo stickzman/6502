@@ -7,6 +7,16 @@ opTable[0x00] = {
     execute: function () {
         this.running = false;
         this.flags.break = true;
+        //Split PC and add each addr byte to stack
+        let bytes = splitHex(this.PC);
+        this.pushStack(bytes[0]); //MSB
+        this.pushStack(bytes[1]); //LSB
+        //Store the processor status in the stack
+        pushStatusToStack.bind(this).call();
+        this.interruptDisable = true;
+        //Set program counter to interrupt vector
+        let vector = new Uint8Array(this.mem.slice(0xFFFE));
+        this.PC = combineHexBuff(vector.reverse());
     }
 };
 opTable[0xA9] = {
@@ -1470,22 +1480,25 @@ opTable[0x48] = {
         this.pushStack(this.ACC);
     }
 };
+function pushStatusToStack() {
+    let statusByte = 0x00;
+    //Set each bit accoriding to flags
+    statusByte += (this.flags.carry) ? 1 : 0;
+    statusByte += (this.flags.zero) ? 2 : 0;
+    statusByte += (this.flags.interruptDisable) ? 4 : 0;
+    statusByte += (this.flags.decimalMode) ? 8 : 0;
+    statusByte += (this.flags.break) ? 16 : 0;
+    statusByte += 32; //This bit always set
+    statusByte += (this.flags.overflow) ? 64 : 0;
+    statusByte += (this.flags.negative) ? 128 : 0;
+    this.pushStack(statusByte);
+}
 opTable[0x08] = {
     name: "PHP",
     bytes: 1,
     cycles: 3,
     execute: function () {
-        let statusByte = 0x00;
-        //Set each bit accoriding to flags
-        statusByte += (this.flags.carry) ? 1 : 0;
-        statusByte += (this.flags.zero) ? 2 : 0;
-        statusByte += (this.flags.interruptDisable) ? 4 : 0;
-        statusByte += (this.flags.decimalMode) ? 8 : 0;
-        statusByte += (this.flags.break) ? 16 : 0;
-        statusByte += 32; //This bit always set
-        statusByte += (this.flags.overflow) ? 64 : 0;
-        statusByte += (this.flags.negative) ? 128 : 0;
-        this.pushStack(statusByte);
+        pushStatusToStack.bind(this).call();
     }
 };
 opTable[0x68] = {
@@ -1652,7 +1665,7 @@ p6502.SP = 0xFF; //Stack Pointer
 p6502.flags = {
     carry: false,
     zero: false,
-    interruptDisable: true,
+    interruptDisable: false,
     decimalMode: false,
     break: false,
     overflow: false,

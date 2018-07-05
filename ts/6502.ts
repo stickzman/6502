@@ -15,7 +15,7 @@ class p6502 {
     private static flags = {
         carry: false, //Last op caused overflow from bit 7 (or 0) of result
         zero: false, //Result of last op was 0
-        interruptDisable: true, //Processor will ignore interrupts when true
+        interruptDisable: false, //Processor will ignore interrupts when true
         decimalMode: false, //Enables BCD arithmetic (ignored in NES)
         break: false, //Set when BRK op was executed
         overflow: false, //Arithmetic yielded invalid 2's complement result
