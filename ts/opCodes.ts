@@ -16,16 +16,7 @@ opTable[0x00] = {
     execute: function() {
         this.running = false;
         this.flags.break = true;
-        //Split PC and add each addr byte to stack
-        let bytes = splitHex(this.PC);
-        this.pushStack(bytes[0]); //MSB
-        this.pushStack(bytes[1]); //LSB
-        //Store the processor status in the stack
-        pushStatusToStack.bind(this).call();
-        this.interruptDisable = true;
-        //Set program counter to interrupt vector
-        let vector = new Uint8Array(this.mem.slice(0xFFFE));
-        this.PC = combineHexBuff(vector.reverse());
+        this.handleForcedInterrupt(0xFFFE);
     }
 }
 

@@ -86,6 +86,26 @@ class p6502 {
         fs.writeFileSync(this.MEM_PATH, Buffer.from(this.mem));
     }
 
+    private static handleInterrupt(resetVectStartAddr: number) {
+        if (!this.flags.interruptDisable) {
+            this.handleForcedInterrupt(resetVectStartAddr);
+        }
+    }
+
+    private static handleForcedInterrupt(resetVectStartAddr: number) {
+        //Split PC and add each addr byte to stack
+        let bytes = splitHex(this.PC);
+        this.pushStack(bytes[0]); //MSB
+        this.pushStack(bytes[1]); //LSB
+        //Store the processor status in the stack
+        pushStatusToStack.bind(this).call();
+        this.flags.interruptDisable = true;
+        //Set program counter to interrupt vector
+        let vector = new Uint8Array(
+            this.mem.slice(resetVectStartAddr, resetVectStartAddr+1));
+        this.PC = combineHexBuff(vector.reverse());
+    }
+
     private static getResetVector(): number{
         let bytes = new Uint8Array(this.mem.slice(0xFFFC,0xFFFE));
         return combineHexBuff(bytes.reverse());
