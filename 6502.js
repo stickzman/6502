@@ -1529,7 +1529,7 @@ class p6502 {
         if (this.mem === undefined) {
             this.mem = new Uint8Array(0x10000);
         }
-        this.PC = this.getResetVector();
+        this.reset();
         this.running = true;
         //Main loop
         while (this.running) {
@@ -1573,6 +1573,16 @@ class p6502 {
     static writeMem() {
         let fs = require("fs");
         fs.writeFileSync(this.MEM_PATH, Buffer.from(this.mem));
+    }
+    static requestInterrupt() {
+        this.handleInterrupt(0xFFFE);
+    }
+    static requestNonMaskInterrupt() {
+        this.handleInterrupt(0xFFFA);
+    }
+    static reset() {
+        this.flags.interruptDisable = true;
+        this.PC = this.getResetVector();
     }
     static handleInterrupt(resetVectStartAddr) {
         if (!this.flags.interruptDisable) {

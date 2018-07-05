@@ -26,7 +26,7 @@ class p6502 {
         if (this.mem === undefined) {
             this.mem = new Uint8Array(0x10000);
         }
-        this.PC = this.getResetVector();
+        this.reset();
 
         this.running = true;
 
@@ -84,6 +84,19 @@ class p6502 {
     private static writeMem() {
         let fs = require("fs");
         fs.writeFileSync(this.MEM_PATH, Buffer.from(this.mem));
+    }
+
+    public static requestInterrupt() {
+        this.handleInterrupt(0xFFFE)
+    }
+
+    public static requestNonMaskInterrupt() {
+        this.handleInterrupt(0xFFFA);
+    }
+
+    public static reset() {
+        this.flags.interruptDisable = true;
+        this.PC = this.getResetVector();
     }
 
     private static handleInterrupt(resetVectStartAddr: number) {
