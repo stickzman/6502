@@ -1528,25 +1528,22 @@ opTable[0x48] = {
     }
 }
 
-function pushStatusToStack() {
-    let statusByte = 0x00;
-    //Set each bit accoriding to flags
-    statusByte += (this.flags.carry) ? 1 : 0;
-    statusByte += (this.flags.zero) ? 2 : 0;
-    statusByte += (this.flags.interruptDisable) ? 4 : 0;
-    statusByte += (this.flags.decimalMode) ? 8 : 0;
-    statusByte += (this.flags.break) ? 16 : 0;
-    statusByte += 32; //This bit always set
-    statusByte += (this.flags.overflow) ? 64 : 0;
-    statusByte += (this.flags.negative) ? 128 : 0;
-    this.pushStack(statusByte);
-}
 opTable[0x08] = {
     name: "PHP", //Push Processor status (all flags, stored in a byte) to stack
     bytes: 1,
     cycles: 3,
     execute: function() {
-        pushStatusToStack.call(this);
+        let statusByte = 0x00;
+        //Set each bit accoriding to flags
+        statusByte += (this.flags.carry) ? 1 : 0;
+        statusByte += (this.flags.zero) ? 2 : 0;
+        statusByte += (this.flags.interruptDisable) ? 4 : 0;
+        statusByte += (this.flags.decimalMode) ? 8 : 0;
+        statusByte += 16; //Always set the break bit from software
+        statusByte += 32; //This bit always set
+        statusByte += (this.flags.overflow) ? 64 : 0;
+        statusByte += (this.flags.negative) ? 128 : 0;
+        this.pushStack(statusByte);
     }
 }
 opTable[0x68] = {
@@ -1572,7 +1569,6 @@ opTable[0x28] = {
         this.flags.interruptDisable = ((sByte & mask) != 0);
         mask = 1 << 3;
         this.flags.decimalMode = ((sByte & mask) != 0);
-        this.flags.break = false; //Reset BRK regardless of stored flag
         mask = 1 << 6;
         this.flags.overflow = ((sByte & mask) != 0);
         mask = 1 << 7;

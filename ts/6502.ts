@@ -123,7 +123,17 @@ class p6502 {
         this.pushStack(bytes[0]); //MSB
         this.pushStack(bytes[1]); //LSB
         //Store the processor status in the stack
-        pushStatusToStack.bind(this).call();
+        let statusByte = 0x00;
+        //Set each bit accoriding to flags, ignoring the break flag
+        statusByte += (this.flags.carry) ? 1 : 0;
+        statusByte += (this.flags.zero) ? 2 : 0;
+        statusByte += (this.flags.interruptDisable) ? 4 : 0;
+        statusByte += (this.flags.decimalMode) ? 8 : 0;
+        statusByte += 32; //This bit always set
+        statusByte += (this.flags.overflow) ? 64 : 0;
+        statusByte += (this.flags.negative) ? 128 : 0;
+        this.pushStack(statusByte);
+
         this.flags.interruptDisable = true;
         //Set program counter to interrupt vector
         let vector = new Uint8Array(
