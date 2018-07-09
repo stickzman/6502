@@ -1,6 +1,5 @@
-/// <reference path="opCodes.ts" />
-class p6502 {
 
+class p6502 {
     public static debug: boolean = true; //Output debug info
     private static readonly MEM_PATH = "mem.hex";
     private static readonly MEM_SIZE = 0x10000;
