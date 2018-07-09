@@ -137,14 +137,13 @@ class p6502 {
     }
 
     private static pushStack(byte: number) {
-        this.mem[combineHex(0x01, this.SP)] = byte;            //Write byte to stack
-        this.SP--;                           //Decrement stack pointer
+        //Write byte to stack & decrement pointer
+        this.mem[combineHex(0x01, this.SP--)] = byte;
         if (this.SP < 0) { this.SP = 0xFF; } //Wrap stack pointer, if necessary
     }
 
     private static pullStack(): number {
-        let byte = this.mem[combineHex(0x01, this.SP)];
-        this.SP++;
+        let byte = this.mem[combineHex(0x01, ++this.SP)];
         if (this.SP > 0xFF) { this.SP = 0; }
         return byte;
     }
@@ -220,6 +219,8 @@ if (hexStr.length > 0) {
 } else {
     p6502.loadMemory("../6502_functional_test.bin");
 }
+input = input.question("Debug? (y/n): ");
+p6502.debug = (input.indexOf("y") !== -1);
 p6502.boot();
 console.log("");
 p6502.displayState();
