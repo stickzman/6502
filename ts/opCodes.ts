@@ -1495,10 +1495,11 @@ opTable[0x20] = {
     execute: function() {
         let addr = this.getRef();
         if (this.debug) {
-            console.log(`Jumping to subroutine at 0x${addr}...`);
+            console.log(`Jumping to subroutine at 0x${
+                addr.toString(16).padStart(4, "0").toUpperCase()}...`);
         }
         //Split PC and add each addr byte to stack
-        let bytes = splitHex(this.PC - 1);
+        let bytes = splitHex(this.PC + 2);
         this.pushStack(bytes[0]);
         this.pushStack(bytes[1]);
         this.PC = addr - 3;
@@ -1513,7 +1514,9 @@ opTable[0x60] = {
         let hiByte = this.pullStack();
         let addr = combineHex(hiByte, loByte);
         if (this.debug) {
-            console.log(`Return to location 0x${addr} from subroutine...`);
+            console.log(`Return to location 0x${
+                addr.toString(16).padStart(4, "0").toUpperCase()
+                } from subroutine...`);
         }
         this.PC = addr;
     }
