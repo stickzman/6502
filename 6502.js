@@ -1533,8 +1533,7 @@ opTable[0x28] = {
         this.flags.interruptDisable = ((sByte & mask) != 0);
         mask = 1 << 3;
         this.flags.decimalMode = ((sByte & mask) != 0);
-        mask = 1 << 4;
-        this.flags.break = ((sByte & mask) != 0);
+        this.flags.break = false; //Reset BRK regardless of stored flag
         mask = 1 << 6;
         this.flags.overflow = ((sByte & mask) != 0);
         mask = 1 << 7;
