@@ -143,6 +143,7 @@ opTable[0xA0] = {
     cycles: 2,
     execute: function () {
         this.Y = this.nextByte();
+        this.updateNumStateFlags(this.Y);
     }
 };
 opTable[0xA4] = {
@@ -152,6 +153,7 @@ opTable[0xA4] = {
     execute: function () {
         let addr = this.getZPageRef();
         this.Y = this.mem[addr];
+        this.updateNumStateFlags(this.Y);
     }
 };
 opTable[0xB4] = {
@@ -161,6 +163,7 @@ opTable[0xB4] = {
     execute: function () {
         let addr = this.getZPageRef(this.X);
         this.Y = this.mem[addr];
+        this.updateNumStateFlags(this.Y);
     }
 };
 opTable[0xAC] = {
@@ -170,6 +173,7 @@ opTable[0xAC] = {
     execute: function () {
         let addr = this.getRef();
         this.Y = this.mem[addr];
+        this.updateNumStateFlags(this.Y);
     }
 };
 opTable[0xBC] = {
@@ -179,6 +183,7 @@ opTable[0xBC] = {
     execute: function () {
         let addr = this.getRef(this.X);
         this.Y = this.mem[addr];
+        this.updateNumStateFlags(this.Y);
     }
 };
 opTable[0x85] = {
@@ -1328,6 +1333,10 @@ function branch() {
     if (this.debug) {
         console.log(`Branching ${dist} bytes...`);
     }
+    if (this.debug && dist == -2) {
+        console.log("TRAPPED");
+        this.flags.break = true;
+    }
     this.PC += dist;
 }
 opTable[0x90] = {
@@ -1419,6 +1428,10 @@ opTable[0x4C] = {
         if (this.debug) {
             console.log(`Jumping to location 0x${addr.toString(16).padStart(4, "0")}...`);
         }
+        if (this.debug && addr == this.PC) {
+            console.log("TRAPPED");
+            this.flags.break = true;
+        }
         this.PC = addr - 3;
     }
 };
@@ -1430,6 +1443,10 @@ opTable[0x6C] = {
         let addr = this.getIndrRef();
         if (this.debug) {
             console.log(`Jumping to location 0x${addr}...`);
+        }
+        if (this.debug && addr == this.PC) {
+            console.log("TRAPPED");
+            this.flags.break = true;
         }
         this.PC = addr - 3;
     }
