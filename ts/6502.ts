@@ -217,7 +217,7 @@ class p6502 {
     }
 
     private static getIndrRef(offset: number = 0): number {
-        let addr = this.nextByte() + offset;
+        let addr = this.getRef();
         return combineHex(this.mem[addr+1], this.mem[addr]);
     }
 }

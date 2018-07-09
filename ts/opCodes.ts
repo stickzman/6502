@@ -1552,6 +1552,7 @@ opTable[0x68] = {
     cycles: 4,
     execute: function() {
         this.ACC = this.pullStack();
+        this.updateNumStateFlags(this.ACC);
     }
 }
 opTable[0x28] = {

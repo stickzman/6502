@@ -1513,6 +1513,7 @@ opTable[0x68] = {
     cycles: 4,
     execute: function () {
         this.ACC = this.pullStack();
+        this.updateNumStateFlags(this.ACC);
     }
 };
 opTable[0x28] = {
@@ -1728,7 +1729,7 @@ class p6502 {
         return addr;
     }
     static getIndrRef(offset = 0) {
-        let addr = this.nextByte() + offset;
+        let addr = this.getRef();
         return combineHex(this.mem[addr + 1], this.mem[addr]);
     }
 }
