@@ -1,6 +1,6 @@
 /// <reference path="opCodes.ts" />
 class p6502 {
-    public static debug: boolean = true; //Output debug info
+    public static debug: boolean = false; //Output debug info
     private static readonly MEM_PATH = "mem.hex";
     private static readonly MEM_SIZE = 0x10000;
     private static readonly RES_VECT_LOC = 0xFFFC;
@@ -137,13 +137,13 @@ class p6502 {
     }
 
     private static pushStack(byte: number) {
-        this.mem[this.SP] = byte;            //Write byte to stack
+        this.mem[combineHex(0x01, this.SP)] = byte;            //Write byte to stack
         this.SP--;                           //Decrement stack pointer
         if (this.SP < 0) { this.SP = 0xFF; } //Wrap stack pointer, if necessary
     }
 
     private static pullStack(): number {
-        let byte = this.mem[this.SP];
+        let byte = this.mem[combineHex(0x01, this.SP)];
         this.SP++;
         if (this.SP > 0xFF) { this.SP = 0; }
         return byte;

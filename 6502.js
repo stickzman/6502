@@ -1664,14 +1664,14 @@ class p6502 {
         return combineHexBuff(bytes.reverse());
     }
     static pushStack(byte) {
-        this.mem[this.SP] = byte; //Write byte to stack
+        this.mem[combineHex(0x01, this.SP)] = byte; //Write byte to stack
         this.SP--; //Decrement stack pointer
         if (this.SP < 0) {
             this.SP = 0xFF;
         } //Wrap stack pointer, if necessary
     }
     static pullStack() {
-        let byte = this.mem[this.SP];
+        let byte = this.mem[combineHex(0x01, this.SP)];
         this.SP++;
         if (this.SP > 0xFF) {
             this.SP = 0;
@@ -1729,7 +1729,7 @@ class p6502 {
         return combineHex(this.mem[addr + 1], this.mem[addr]);
     }
 }
-p6502.debug = true; //Output debug info
+p6502.debug = false; //Output debug info
 p6502.MEM_PATH = "mem.hex";
 p6502.MEM_SIZE = 0x10000;
 p6502.RES_VECT_LOC = 0xFFFC;
