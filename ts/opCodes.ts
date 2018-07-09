@@ -556,7 +556,7 @@ opTable[0xE6] = {
     cycles: 5,
     execute: function() {
         let addr = this.getZPageRef();
-        this.mem[addr]++;
+        this.mem[addr] = addWrap(this.mem[addr], 1);
         this.updateNumStateFlags(this.mem[addr]);
     }
 }
@@ -566,7 +566,7 @@ opTable[0xF6] = {
     cycles: 6,
     execute: function() {
         let addr = this.getZPageRef(this.X);
-        this.mem[addr]++;
+        this.mem[addr] = addWrap(this.mem[addr], 1);
         this.updateNumStateFlags(this.mem[addr]);
     }
 }
@@ -576,7 +576,7 @@ opTable[0xEE] = {
     cycles: 6,
     execute: function() {
         let addr = this.getRef();
-        this.mem[addr]++;
+        this.mem[addr] = addWrap(this.mem[addr], 1);
         this.updateNumStateFlags(this.mem[addr]);
     }
 }
@@ -586,7 +586,7 @@ opTable[0xFE] = {
     cycles: 7,
     execute: function() {
         let addr = this.getRef(this.X);
-        this.mem[addr]++;
+        this.mem[addr] = addWrap(this.mem[addr], 1);
         this.updateNumStateFlags(this.mem[addr]);
     }
 }
@@ -596,7 +596,7 @@ opTable[0xE8] = {
     bytes: 1,
     cycles: 2,
     execute: function() {
-        this.X++;
+        this.X = addWrap(this.X, 1);
         this.updateNumStateFlags(this.X);
     }
 }
@@ -605,7 +605,7 @@ opTable[0xC8] = {
     bytes: 1,
     cycles: 2,
     execute: function() {
-        this.Y++;
+        this.Y = addWrap(this.Y, 1);
         this.updateNumStateFlags(this.Y);
     }
 }
@@ -616,7 +616,7 @@ opTable[0xC6] = {
     cycles: 5,
     execute: function() {
         let addr = this.getZPageRef();
-        this.mem[addr]--;
+        this.mem[addr] = addWrap(this.mem[addr], -1);
         this.updateNumStateFlags(this.mem[addr]);
     }
 }
@@ -626,7 +626,7 @@ opTable[0xD6] = {
     cycles: 6,
     execute: function() {
         let addr = this.getZPageRef(this.X);
-        this.mem[addr]--;
+        this.mem[addr] = addWrap(this.mem[addr], -1);
         this.updateNumStateFlags(this.mem[addr]);
     }
 }
@@ -636,7 +636,7 @@ opTable[0xCE] = {
     cycles: 3,
     execute: function() {
         let addr = this.getRef();
-        this.mem[addr]--;
+        this.mem[addr] = addWrap(this.mem[addr], -1);
         this.updateNumStateFlags(this.mem[addr]);
     }
 }
@@ -646,7 +646,7 @@ opTable[0xDE] = {
     cycles: 7,
     execute: function() {
         let addr = this.getRef(this.X);
-        this.mem[addr]--;
+        this.mem[addr] = addWrap(this.mem[addr], -1);
         this.updateNumStateFlags(this.mem[addr]);
     }
 }
@@ -656,7 +656,7 @@ opTable[0xCA] = {
     bytes: 1,
     cycles: 2,
     execute: function() {
-        this.X--;
+        this.X = addWrap(this.X, -1);
         this.updateNumStateFlags(this.X);
     }
 }
@@ -665,7 +665,7 @@ opTable[0x88] = {
     bytes: 1,
     cycles: 2,
     execute: function() {
-        this.Y--;
+        this.Y = addWrap(this.Y, -1);
         this.updateNumStateFlags(this.Y);
     }
 }
@@ -1355,10 +1355,12 @@ opTable[0x7E] = {
 }
 
 function branch() {
+    let dist = this.nextByte();
+    dist -= (dist < 0x80) ? 0 : 0x100;
     if (this.debug) {
-        console.log(`Branching ${this.nextByte()} bytes...`);
+        console.log(`Branching ${dist} bytes...`);
     }
-    this.PC += this.nextByte();
+    this.PC += dist;
 }
 opTable[0x90] = {
     name: "BCC", //Branch if Carry Clear
@@ -1448,7 +1450,7 @@ opTable[0x4C] = {
     execute: function() {
         let addr = this.getRef();
         if (this.debug) {
-            console.log(`Jumping to location 0x${addr}...`);
+            console.log(`Jumping to location 0x${addr.toString(16).padStart(4, "0")}...`);
         }
         this.PC = addr - 3;
     }

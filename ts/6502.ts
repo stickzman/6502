@@ -1,4 +1,4 @@
-
+/// <reference path="opCodes.ts" />
 class p6502 {
     public static debug: boolean = true; //Output debug info
     private static readonly MEM_PATH = "mem.hex";
@@ -60,6 +60,11 @@ class p6502 {
 
             op.execute.bind(this)();        //Execute
 
+            if (this.debug) {
+                p6502.displayState();
+                console.log("");
+            }
+
             this.PC += op.bytes;
         }
 
@@ -67,7 +72,7 @@ class p6502 {
         this.writeMem();
     }
 
-    private static loadMemory(filePath: string) {
+    public static loadMemory(filePath: string) {
         let fs = require("fs");
         this.mem = fs.readFileSync(filePath) ;
     }
@@ -107,7 +112,8 @@ class p6502 {
 
     public static reset() {
         this.flags.interruptDisable = true;
-        this.PC = this.getResetVector();
+        //this.PC = this.getResetVector();
+        this.PC = 0x400;
         this.flags.interruptDisable = false;
     }
 
@@ -207,10 +213,12 @@ class p6502 {
     }
 }
 
-var input = require('readline-sync');
-var hexStr = input.question("Please enter program hex: ");
+let input = require('readline-sync');
+let hexStr = input.question("Please enter program hex: ");
 if (hexStr.length > 0) {
     p6502.loadProgStr(hexStr);
+} else {
+    p6502.loadMemory("../6502_functional_test.bin");
 }
 p6502.boot();
 console.log("");

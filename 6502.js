@@ -1,195 +1,3 @@
-class p6502 {
-    static boot() {
-        if (this.mem === undefined) {
-            this.mem = new Uint8Array(0x10000);
-        }
-        this.reset();
-        //Main loop
-        while (!this.flags.break) {
-            //Check interrupt lines
-            if (this.NMI) {
-                this.NMI = false;
-                this.handleInterrupt(this.NMI_VECT_LOC);
-            }
-            else if (this.IRQ && !this.flags.interruptDisable) {
-                this.IRQ = false;
-                this.handleInterrupt(this.INT_VECT_LOC);
-            }
-            let opCode = this.mem[this.PC]; //Fetch
-            let op = opTable[opCode]; //Decode
-            if (op === undefined) {
-                console.log(`ERROR: Encountered unknown opCode: [0x${opCode.toString(16).toUpperCase()}] at PC: 0x${this.PC.toString(16).padStart(4, "0").toUpperCase()}`);
-                break;
-            }
-            if (this.debug) {
-                console.log(`Executing ${op.name} at 0x${this.PC.toString(16).padStart(4, "0").toUpperCase()}...`);
-            }
-            op.execute.bind(this)(); //Execute
-            this.PC += op.bytes;
-        }
-        //Write memory to file
-        this.writeMem();
-    }
-    static loadMemory(filePath) {
-        let fs = require("fs");
-        this.mem = fs.readFileSync(filePath);
-    }
-    static loadProg(filePath) {
-        let fs = require("fs");
-        let prog = fs.readFileSync(filePath);
-        this.loadProgBuff(prog);
-    }
-    static loadProgStr(str) {
-        str = str.replace(/[^A-z0-9]/g, "");
-        let prog = Buffer.from(str, "hex");
-        this.loadProgBuff(prog);
-    }
-    static loadProgBuff(buff) {
-        let mem = new Buffer(this.MEM_SIZE);
-        buff.copy(mem, 0x0200);
-        mem[this.RES_VECT_LOC] = 0x00;
-        mem[this.RES_VECT_LOC + 1] = 0x02;
-        this.mem = mem;
-    }
-    static writeMem() {
-        let fs = require("fs");
-        fs.writeFileSync(this.MEM_PATH, Buffer.from(this.mem));
-    }
-    static requestInterrupt() {
-        this.IRQ = true;
-    }
-    static requestNMInterrupt() {
-        this.NMI = true;
-    }
-    static reset() {
-        this.flags.interruptDisable = true;
-        this.PC = this.getResetVector();
-        this.flags.interruptDisable = false;
-    }
-    static handleInterrupt(resetVectStartAddr) {
-        //Split PC and add each addr byte to stack
-        let bytes = splitHex(this.PC);
-        this.pushStack(bytes[0]); //MSB
-        this.pushStack(bytes[1]); //LSB
-        //Store the processor status in the stack
-        pushStatusToStack.bind(this).call();
-        this.flags.interruptDisable = true;
-        //Set program counter to interrupt vector
-        let vector = new Uint8Array(this.mem.slice(resetVectStartAddr, resetVectStartAddr + 1));
-        this.PC = combineHexBuff(vector.reverse());
-    }
-    static getResetVector() {
-        let bytes = new Uint8Array(this.mem.slice(0xFFFC, 0xFFFE));
-        return combineHexBuff(bytes.reverse());
-    }
-    static pushStack(byte) {
-        this.mem[this.SP] = byte; //Write byte to stack
-        this.SP--; //Decrement stack pointer
-        if (this.SP < 0) {
-            this.SP = 0xFF;
-        } //Wrap stack pointer, if necessary
-    }
-    static pullStack() {
-        let byte = this.mem[this.SP];
-        this.SP++;
-        if (this.SP > 0xFF) {
-            this.SP = 0;
-        }
-        return byte;
-    }
-    static displayState() {
-        //Print Registers
-        console.log(`[ACC: 0x${this.ACC.toString(16).padStart(2, "0").toUpperCase()} X: 0x${this.X.toString(16).padStart(2, "0").toUpperCase()} Y: 0x${this.Y.toString(16).padStart(2, "0").toUpperCase()} PC: 0x${this.PC.toString(16).padStart(4, "0").toUpperCase()} SP: 0x${this.SP.toString(16).padStart(2, "0").toUpperCase()} ]`);
-        //Print flags
-        let keys = Object.getOwnPropertyNames(this.flags);
-        for (let key of keys) {
-            console.log(`${key}: ${this.flags[key]}`);
-        }
-    }
-    static nextByte() {
-        return this.mem[this.PC + 1];
-    }
-    static next2Bytes(flip = true) {
-        let bytes = new Uint8Array(this.mem.slice(this.PC + 1, this.PC + 3));
-        if (flip) {
-            bytes.reverse();
-        }
-        return combineHexBuff(bytes);
-    }
-    static updateOverflowFlag(reg, num1, num2) {
-        //If the sum of two like signed terms is a diff sign, then the
-        //signed result is outside [-128, 127], so set overflow flag
-        this.flags.overflow = (num1 < 0x80 && num2 < 0x80 && reg >= 0x80) ||
-            (num1 >= 0x80 && num2 >= 0x80 && reg < 0x80);
-    }
-    static updateNegativeFlag(register) {
-        this.flags.negative = (register > 0x7F);
-    }
-    static updateNumStateFlags(register) {
-        this.flags.zero = (register === 0x00);
-        this.updateNegativeFlag(register);
-    }
-    static getRef(offset = 0) {
-        let addr = this.next2Bytes() + offset;
-        if (this.debug) {
-            console.log(`Accessing memory at 0x${addr.toString(16).padStart(4, "0")}...`);
-        }
-        return addr;
-    }
-    static getZPageRef(offset = 0) {
-        let addr = this.nextByte() + offset;
-        if (this.debug) {
-            console.log(`Accessing memory at 0x${addr.toString(16).padStart(4, "0")}...`);
-        }
-        return addr;
-    }
-    static getIndrRef(offset = 0) {
-        let addr = this.nextByte() + offset;
-        return combineHex(this.mem[addr + 1], this.mem[addr]);
-    }
-}
-p6502.debug = true; //Output debug info
-p6502.MEM_PATH = "mem.hex";
-p6502.MEM_SIZE = 0x10000;
-p6502.RES_VECT_LOC = 0xFFFC;
-p6502.INT_VECT_LOC = 0xFFFE;
-p6502.NMI_VECT_LOC = 0xFFFA;
-p6502.IRQ = false; //Interrupt Request signal line
-p6502.NMI = false; //Non-Maskable Interrupt signal line
-p6502.ACC = 0; //Accumulator
-p6502.X = 0; //Register X
-p6502.Y = 0; //Register Y
-p6502.PC = 0; //Program Counter
-p6502.SP = 0xFF; //Stack Pointer
-p6502.flags = {
-    carry: false,
-    zero: false,
-    interruptDisable: false,
-    decimalMode: false,
-    break: false,
-    overflow: false,
-    negative: false //Result of last op had bit 7 set to 1
-};
-var input = require('readline-sync');
-var hexStr = input.question("Please enter program hex: ");
-if (hexStr.length > 0) {
-    p6502.loadProgStr(hexStr);
-}
-p6502.boot();
-console.log("");
-p6502.displayState();
-function combineHexBuff(buff) {
-    return (buff[0] << 8) | (buff[1]);
-}
-function combineHex(hiByte, lowByte) {
-    return (hiByte << 8) | (lowByte);
-}
-function splitHex(hex) {
-    let str = hex.toString(16).padStart(4, "0");
-    let hiByte = parseInt(str.substr(0, 2), 16);
-    let loByte = parseInt(str.substr(2), 16);
-    return [hiByte, loByte];
-}
 /// <reference path="6502.ts" />
 let opTable = {};
 opTable[0x00] = {
@@ -730,7 +538,7 @@ opTable[0xE6] = {
     cycles: 5,
     execute: function () {
         let addr = this.getZPageRef();
-        this.mem[addr]++;
+        this.mem[addr] = addWrap(this.mem[addr], 1);
         this.updateNumStateFlags(this.mem[addr]);
     }
 };
@@ -740,7 +548,7 @@ opTable[0xF6] = {
     cycles: 6,
     execute: function () {
         let addr = this.getZPageRef(this.X);
-        this.mem[addr]++;
+        this.mem[addr] = addWrap(this.mem[addr], 1);
         this.updateNumStateFlags(this.mem[addr]);
     }
 };
@@ -750,7 +558,7 @@ opTable[0xEE] = {
     cycles: 6,
     execute: function () {
         let addr = this.getRef();
-        this.mem[addr]++;
+        this.mem[addr] = addWrap(this.mem[addr], 1);
         this.updateNumStateFlags(this.mem[addr]);
     }
 };
@@ -760,7 +568,7 @@ opTable[0xFE] = {
     cycles: 7,
     execute: function () {
         let addr = this.getRef(this.X);
-        this.mem[addr]++;
+        this.mem[addr] = addWrap(this.mem[addr], 1);
         this.updateNumStateFlags(this.mem[addr]);
     }
 };
@@ -769,7 +577,7 @@ opTable[0xE8] = {
     bytes: 1,
     cycles: 2,
     execute: function () {
-        this.X++;
+        this.X = addWrap(this.X, 1);
         this.updateNumStateFlags(this.X);
     }
 };
@@ -778,7 +586,7 @@ opTable[0xC8] = {
     bytes: 1,
     cycles: 2,
     execute: function () {
-        this.Y++;
+        this.Y = addWrap(this.Y, 1);
         this.updateNumStateFlags(this.Y);
     }
 };
@@ -788,7 +596,7 @@ opTable[0xC6] = {
     cycles: 5,
     execute: function () {
         let addr = this.getZPageRef();
-        this.mem[addr]--;
+        this.mem[addr] = addWrap(this.mem[addr], -1);
         this.updateNumStateFlags(this.mem[addr]);
     }
 };
@@ -798,7 +606,7 @@ opTable[0xD6] = {
     cycles: 6,
     execute: function () {
         let addr = this.getZPageRef(this.X);
-        this.mem[addr]--;
+        this.mem[addr] = addWrap(this.mem[addr], -1);
         this.updateNumStateFlags(this.mem[addr]);
     }
 };
@@ -808,7 +616,7 @@ opTable[0xCE] = {
     cycles: 3,
     execute: function () {
         let addr = this.getRef();
-        this.mem[addr]--;
+        this.mem[addr] = addWrap(this.mem[addr], -1);
         this.updateNumStateFlags(this.mem[addr]);
     }
 };
@@ -818,7 +626,7 @@ opTable[0xDE] = {
     cycles: 7,
     execute: function () {
         let addr = this.getRef(this.X);
-        this.mem[addr]--;
+        this.mem[addr] = addWrap(this.mem[addr], -1);
         this.updateNumStateFlags(this.mem[addr]);
     }
 };
@@ -827,7 +635,7 @@ opTable[0xCA] = {
     bytes: 1,
     cycles: 2,
     execute: function () {
-        this.X--;
+        this.X = addWrap(this.X, -1);
         this.updateNumStateFlags(this.X);
     }
 };
@@ -836,7 +644,7 @@ opTable[0x88] = {
     bytes: 1,
     cycles: 2,
     execute: function () {
-        this.Y--;
+        this.Y = addWrap(this.Y, -1);
         this.updateNumStateFlags(this.Y);
     }
 };
@@ -1515,10 +1323,12 @@ opTable[0x7E] = {
     }
 };
 function branch() {
+    let dist = this.nextByte();
+    dist -= (dist < 0x80) ? 0 : 0x100;
     if (this.debug) {
-        console.log(`Branching ${this.nextByte()} bytes...`);
+        console.log(`Branching ${dist} bytes...`);
     }
-    this.PC += this.nextByte();
+    this.PC += dist;
 }
 opTable[0x90] = {
     name: "BCC",
@@ -1607,7 +1417,7 @@ opTable[0x4C] = {
     execute: function () {
         let addr = this.getRef();
         if (this.debug) {
-            console.log(`Jumping to location 0x${addr}...`);
+            console.log(`Jumping to location 0x${addr.toString(16).padStart(4, "0")}...`);
         }
         this.PC = addr - 3;
     }
@@ -1746,3 +1556,214 @@ opTable[0x40] = {
         this.PC = addr;
     }
 };
+/// <reference path="opCodes.ts" />
+class p6502 {
+    static boot() {
+        if (this.mem === undefined) {
+            this.mem = new Uint8Array(0x10000);
+        }
+        this.reset();
+        //Main loop
+        while (!this.flags.break) {
+            //Check interrupt lines
+            if (this.NMI) {
+                this.NMI = false;
+                this.handleInterrupt(this.NMI_VECT_LOC);
+            }
+            else if (this.IRQ && !this.flags.interruptDisable) {
+                this.IRQ = false;
+                this.handleInterrupt(this.INT_VECT_LOC);
+            }
+            let opCode = this.mem[this.PC]; //Fetch
+            let op = opTable[opCode]; //Decode
+            if (op === undefined) {
+                console.log(`ERROR: Encountered unknown opCode: [0x${opCode.toString(16).toUpperCase()}] at PC: 0x${this.PC.toString(16).padStart(4, "0").toUpperCase()}`);
+                break;
+            }
+            if (this.debug) {
+                console.log(`Executing ${op.name} at 0x${this.PC.toString(16).padStart(4, "0").toUpperCase()}...`);
+            }
+            op.execute.bind(this)(); //Execute
+            if (this.debug) {
+                p6502.displayState();
+                console.log("");
+            }
+            this.PC += op.bytes;
+        }
+        //Write memory to file
+        this.writeMem();
+    }
+    static loadMemory(filePath) {
+        let fs = require("fs");
+        this.mem = fs.readFileSync(filePath);
+    }
+    static loadProg(filePath) {
+        let fs = require("fs");
+        let prog = fs.readFileSync(filePath);
+        this.loadProgBuff(prog);
+    }
+    static loadProgStr(str) {
+        str = str.replace(/[^A-z0-9]/g, "");
+        let prog = Buffer.from(str, "hex");
+        this.loadProgBuff(prog);
+    }
+    static loadProgBuff(buff) {
+        let mem = new Buffer(this.MEM_SIZE);
+        buff.copy(mem, 0x0200);
+        mem[this.RES_VECT_LOC] = 0x00;
+        mem[this.RES_VECT_LOC + 1] = 0x02;
+        this.mem = mem;
+    }
+    static writeMem() {
+        let fs = require("fs");
+        fs.writeFileSync(this.MEM_PATH, Buffer.from(this.mem));
+    }
+    static requestInterrupt() {
+        this.IRQ = true;
+    }
+    static requestNMInterrupt() {
+        this.NMI = true;
+    }
+    static reset() {
+        this.flags.interruptDisable = true;
+        //this.PC = this.getResetVector();
+        this.PC = 0x400;
+        this.flags.interruptDisable = false;
+    }
+    static handleInterrupt(resetVectStartAddr) {
+        //Split PC and add each addr byte to stack
+        let bytes = splitHex(this.PC);
+        this.pushStack(bytes[0]); //MSB
+        this.pushStack(bytes[1]); //LSB
+        //Store the processor status in the stack
+        pushStatusToStack.bind(this).call();
+        this.flags.interruptDisable = true;
+        //Set program counter to interrupt vector
+        let vector = new Uint8Array(this.mem.slice(resetVectStartAddr, resetVectStartAddr + 1));
+        this.PC = combineHexBuff(vector.reverse());
+    }
+    static getResetVector() {
+        let bytes = new Uint8Array(this.mem.slice(0xFFFC, 0xFFFE));
+        return combineHexBuff(bytes.reverse());
+    }
+    static pushStack(byte) {
+        this.mem[this.SP] = byte; //Write byte to stack
+        this.SP--; //Decrement stack pointer
+        if (this.SP < 0) {
+            this.SP = 0xFF;
+        } //Wrap stack pointer, if necessary
+    }
+    static pullStack() {
+        let byte = this.mem[this.SP];
+        this.SP++;
+        if (this.SP > 0xFF) {
+            this.SP = 0;
+        }
+        return byte;
+    }
+    static displayState() {
+        //Print Registers
+        console.log(`[ACC: 0x${this.ACC.toString(16).padStart(2, "0").toUpperCase()} X: 0x${this.X.toString(16).padStart(2, "0").toUpperCase()} Y: 0x${this.Y.toString(16).padStart(2, "0").toUpperCase()} PC: 0x${this.PC.toString(16).padStart(4, "0").toUpperCase()} SP: 0x${this.SP.toString(16).padStart(2, "0").toUpperCase()} ]`);
+        //Print flags
+        let keys = Object.getOwnPropertyNames(this.flags);
+        for (let key of keys) {
+            console.log(`${key}: ${this.flags[key]}`);
+        }
+    }
+    static nextByte() {
+        return this.mem[this.PC + 1];
+    }
+    static next2Bytes(flip = true) {
+        let bytes = new Uint8Array(this.mem.slice(this.PC + 1, this.PC + 3));
+        if (flip) {
+            bytes.reverse();
+        }
+        return combineHexBuff(bytes);
+    }
+    static updateOverflowFlag(reg, num1, num2) {
+        //If the sum of two like signed terms is a diff sign, then the
+        //signed result is outside [-128, 127], so set overflow flag
+        this.flags.overflow = (num1 < 0x80 && num2 < 0x80 && reg >= 0x80) ||
+            (num1 >= 0x80 && num2 >= 0x80 && reg < 0x80);
+    }
+    static updateNegativeFlag(register) {
+        this.flags.negative = (register > 0x7F);
+    }
+    static updateNumStateFlags(register) {
+        this.flags.zero = (register === 0x00);
+        this.updateNegativeFlag(register);
+    }
+    static getRef(offset = 0) {
+        let addr = this.next2Bytes() + offset;
+        if (this.debug) {
+            console.log(`Accessing memory at 0x${addr.toString(16).padStart(4, "0")}...`);
+        }
+        return addr;
+    }
+    static getZPageRef(offset = 0) {
+        let addr = this.nextByte() + offset;
+        if (this.debug) {
+            console.log(`Accessing memory at 0x${addr.toString(16).padStart(4, "0")}...`);
+        }
+        return addr;
+    }
+    static getIndrRef(offset = 0) {
+        let addr = this.nextByte() + offset;
+        return combineHex(this.mem[addr + 1], this.mem[addr]);
+    }
+}
+p6502.debug = true; //Output debug info
+p6502.MEM_PATH = "mem.hex";
+p6502.MEM_SIZE = 0x10000;
+p6502.RES_VECT_LOC = 0xFFFC;
+p6502.INT_VECT_LOC = 0xFFFE;
+p6502.NMI_VECT_LOC = 0xFFFA;
+p6502.IRQ = false; //Interrupt Request signal line
+p6502.NMI = false; //Non-Maskable Interrupt signal line
+p6502.ACC = 0; //Accumulator
+p6502.X = 0; //Register X
+p6502.Y = 0; //Register Y
+p6502.PC = 0; //Program Counter
+p6502.SP = 0xFF; //Stack Pointer
+p6502.flags = {
+    carry: false,
+    zero: false,
+    interruptDisable: false,
+    decimalMode: false,
+    break: false,
+    overflow: false,
+    negative: false //Result of last op had bit 7 set to 1
+};
+let input = require('readline-sync');
+let hexStr = input.question("Please enter program hex: ");
+if (hexStr.length > 0) {
+    p6502.loadProgStr(hexStr);
+}
+else {
+    p6502.loadMemory("../6502_functional_test.bin");
+}
+p6502.boot();
+console.log("");
+p6502.displayState();
+function combineHexBuff(buff) {
+    return (buff[0] << 8) | (buff[1]);
+}
+function combineHex(hiByte, lowByte) {
+    return (hiByte << 8) | (lowByte);
+}
+function splitHex(hex) {
+    let str = hex.toString(16).padStart(4, "0");
+    let hiByte = parseInt(str.substr(0, 2), 16);
+    let loByte = parseInt(str.substr(2), 16);
+    return [hiByte, loByte];
+}
+function addWrap(reg, add) {
+    reg = reg + add;
+    if (reg > 0xFF) {
+        reg = 0x00;
+    }
+    if (reg < 0x00) {
+        reg = 0xFF;
+    }
+    return reg;
+}

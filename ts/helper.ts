@@ -12,3 +12,10 @@ function splitHex(hex: number): [number, number] {
     let loByte = parseInt(str.substr(2), 16);
     return [hiByte, loByte];
 }
+
+function addWrap(reg: number, add: number): number {
+    reg = reg + add;
+    if (reg > 0xFF) { reg = 0x00; }
+    if (reg < 0x00) { reg = 0xFF; }
+    return reg;
+}
