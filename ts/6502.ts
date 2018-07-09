@@ -131,9 +131,9 @@ class p6502 {
     }
 
     private static pushStack(byte: number) {
-        this.mem[this.SP] = byte;               //Write byte to stack
-        this.SP--;                              //Decrement stack pointer
-        if (this.SP < 0) { this.SP = 0xFF; }    //Wrap stack pointer, if necessary
+        this.mem[this.SP] = byte;            //Write byte to stack
+        this.SP--;                           //Decrement stack pointer
+        if (this.SP < 0) { this.SP = 0xFF; } //Wrap stack pointer, if necessary
     }
 
     private static pullStack(): number {
@@ -145,8 +145,9 @@ class p6502 {
 
     public static displayState() {
         //Print Registers
-        console.log(`[ACC: 0x${this.ACC.toString(16).padStart(2, "0").toUpperCase()
-                } X: 0x${this.X.toString(16).padStart(2, "0").toUpperCase()
+        console.log(`[ACC: 0x${
+            this.ACC.toString(16).padStart(2, "0").toUpperCase()
+            } X: 0x${this.X.toString(16).padStart(2, "0").toUpperCase()
             } Y: 0x${this.Y.toString(16).padStart(2, "0").toUpperCase()
             } PC: 0x${this.PC.toString(16).padStart(4, "0").toUpperCase()
             } SP: 0x${this.SP.toString(16).padStart(2, "0").toUpperCase()} ]`);
@@ -170,11 +171,11 @@ class p6502 {
         return combineHexBuff(bytes);
     }
 
-    private static updateOverflowFlag(register: number, num1: number, num2: number) {
+    private static updateOverflowFlag(reg: number, num1: number, num2: number) {
         //If the sum of two like signed terms is a diff sign, then the
         //signed result is outside [-128, 127], so set overflow flag
-        this.flags.overflow= (num1 < 0x80 && num2 < 0x80 && register >= 0x80) ||
-                              (num1 >= 0x80 && num2 >= 0x80 && register < 0x80);
+        this.flags.overflow= (num1 < 0x80 && num2 < 0x80 && reg >= 0x80) ||
+                              (num1 >= 0x80 && num2 >= 0x80 && reg < 0x80);
     }
 
     private static updateNegativeFlag(register: number) {

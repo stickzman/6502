@@ -1143,7 +1143,8 @@ opTable[0x46] = {
     execute: function() {
         let addr = this.getZPageRef();
         this.flags.carry = (this.mem[addr] % 2 == 0);
-        this.mem[addr] = this.mem[addr] >> 1;    this.updateNumStateFlags(this.mem[addr]);
+        this.mem[addr] = this.mem[addr] >> 1;
+        this.updateNumStateFlags(this.mem[addr]);
     }
 }
 opTable[0x56] = {
@@ -1153,7 +1154,8 @@ opTable[0x56] = {
     execute: function() {
         let addr = this.getZPageRef(this.X);
         this.flags.carry = (this.mem[addr] % 2 == 0);
-        this.mem[addr] = this.mem[addr] >> 1;     this.updateNumStateFlags(this.mem[addr]);
+        this.mem[addr] = this.mem[addr] >> 1;
+        this.updateNumStateFlags(this.mem[addr]);
     }
 }
 opTable[0x4E] = {
@@ -1163,7 +1165,8 @@ opTable[0x4E] = {
     execute: function() {
         let addr = this.getRef();
         this.flags.carry = (this.mem[addr] % 2 == 0);
-        this.mem[addr] = this.mem[addr] >> 1;    this.updateNumStateFlags(this.mem[addr]);
+        this.mem[addr] = this.mem[addr] >> 1;
+        this.updateNumStateFlags(this.mem[addr]);
     }
 }
 opTable[0x5E] = {
@@ -1173,7 +1176,8 @@ opTable[0x5E] = {
     execute: function() {
         let addr = this.getRef(this.X);
         this.flags.carry = (this.mem[addr] % 2 == 0);
-        this.mem[addr] = this.mem[addr] >> 1;  this.updateNumStateFlags(this.mem[addr]);
+        this.mem[addr] = this.mem[addr] >> 1;
+        this.updateNumStateFlags(this.mem[addr]);
     }
 }
 
@@ -1306,7 +1310,8 @@ opTable[0x66] = {
         let addBit = (this.flags.carry) ? 0x80 : 0;
         this.flags.carry = (this.mem[addr] % 2 == 0);
         this.mem[addr] = this.mem[addr] >> 1;
-        this.mem[addr] += addBit; this.updateNumStateFlags(this.mem[addr]);
+        this.mem[addr] += addBit;
+        this.updateNumStateFlags(this.mem[addr]);
     }
 }
 opTable[0x76] = {
@@ -1318,7 +1323,8 @@ opTable[0x76] = {
         let addBit = (this.flags.carry) ? 0x80 : 0;
         this.flags.carry = (this.mem[addr] % 2 == 0);
         this.mem[addr] = this.mem[addr] >> 1;
-        this.mem[addr] += addBit; this.updateNumStateFlags(this.mem[addr]);
+        this.mem[addr] += addBit;
+        this.updateNumStateFlags(this.mem[addr]);
     }
 }
 opTable[0x6E] = {
@@ -1330,7 +1336,8 @@ opTable[0x6E] = {
         let addBit = (this.flags.carry) ? 0x80 : 0;
         this.flags.carry = (this.mem[addr] % 2 == 0);
         this.mem[addr] = this.mem[addr] >> 1;
-        this.mem[addr] += addBit; this.updateNumStateFlags(this.mem[addr]);
+        this.mem[addr] += addBit;
+        this.updateNumStateFlags(this.mem[addr]);
     }
 }
 opTable[0x7E] = {
@@ -1342,7 +1349,8 @@ opTable[0x7E] = {
         let addBit = (this.flags.carry) ? 0x80 : 0;
         this.flags.carry = (this.mem[addr] % 2 == 0);
         this.mem[addr] = this.mem[addr] >> 1;
-        this.mem[addr] += addBit; this.updateNumStateFlags(this.mem[addr]);
+        this.mem[addr] += addBit;
+        this.updateNumStateFlags(this.mem[addr]);
     }
 }
 
