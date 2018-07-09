@@ -4,9 +4,14 @@ class p6502 {
     public static debug: boolean = true; //Output debug info
     private static readonly MEM_PATH = "mem.hex";
     private static readonly MEM_SIZE = 0x10000;
+    private static readonly RES_VECT_LOC = 0xFFFC;
+    private static readonly INT_VECT_LOC = 0xFFFE;
+    private static readonly NMI_VECT_LOC = 0xFFFA;
 
     private static mem: Uint8Array;
-    private static running: boolean = false;
+    private static IRQ: boolean = false; //Interrupt Request signal line
+    private static NMI: boolean = false; //Non-Maskable Interrupt signal line
+
     private static ACC: number = 0;//Accumulator
     private static X: number = 0;  //Register X
     private static Y: number = 0;  //Register Y
@@ -28,10 +33,17 @@ class p6502 {
         }
         this.reset();
 
-        this.running = true;
-
         //Main loop
-        while(this.running) {
+        while(!this.flags.break) {
+            //Check interrupt lines
+            if (this.NMI) {
+                this.NMI = false;
+                this.handleInterrupt(this.NMI_VECT_LOC);
+            } else if (this.IRQ && !this.flags.interruptDisable) {
+                this.IRQ = false;
+                this.handleInterrupt(this.INT_VECT_LOC);
+            }
+
             let opCode = this.mem[this.PC]; //Fetch
 
             let op = opTable[opCode];       //Decode
@@ -64,20 +76,20 @@ class p6502 {
     public static loadProg(filePath: string) {
         let fs = require("fs");
         let prog = fs.readFileSync(filePath) as Buffer;
-        let mem = new Buffer(this.MEM_SIZE);
-        prog.copy(mem, 0x0200);
-        mem[0xFFFC] = 0x00;
-        mem[0xFFFD] = 0x02;
-        this.mem = mem as Uint8Array;
+        this.loadProgBuff(prog);
     }
 
     public static loadProgStr(str: string) {
         str = str.replace(/[^A-z0-9]/g, "");
         let prog = Buffer.from(str, "hex");
+        this.loadProgBuff(prog);
+    }
+
+    private static loadProgBuff(buff: Buffer) {
         let mem = new Buffer(this.MEM_SIZE);
-        prog.copy(mem, 0x0200);
-        mem[0xFFFC] = 0x00;
-        mem[0xFFFD] = 0x02;
+        buff.copy(mem, 0x0200);
+        mem[this.RES_VECT_LOC] = 0x00;
+        mem[this.RES_VECT_LOC + 1] = 0x02;
         this.mem = mem as Uint8Array;
     }
 
@@ -87,25 +99,20 @@ class p6502 {
     }
 
     public static requestInterrupt() {
-        this.handleInterrupt(0xFFFE)
+        this.IRQ = true;
     }
 
-    public static requestNonMaskInterrupt() {
-        this.handleInterrupt(0xFFFA);
+    public static requestNMInterrupt() {
+        this.NMI = true;
     }
 
     public static reset() {
         this.flags.interruptDisable = true;
         this.PC = this.getResetVector();
+        this.flags.interruptDisable = false;
     }
 
     private static handleInterrupt(resetVectStartAddr: number) {
-        if (!this.flags.interruptDisable) {
-            this.handleForcedInterrupt(resetVectStartAddr);
-        }
-    }
-
-    private static handleForcedInterrupt(resetVectStartAddr: number) {
         //Split PC and add each addr byte to stack
         let bytes = splitHex(this.PC);
         this.pushStack(bytes[0]); //MSB
@@ -167,8 +174,8 @@ class p6502 {
     private static updateOverflowFlag(register: number, num1: number, num2: number) {
         //If the sum of two like signed terms is a diff sign, then the
         //signed result is outside [-128, 127], so set overflow flag
-        this.flags.overflow= (num1 < 0x80 && num2 < 0x80 && this.ACC >= 0x80) ||
-                              (num1 >= 0x80 && num2 >= 0x80 && this.ACC < 0x80);
+        this.flags.overflow= (num1 < 0x80 && num2 < 0x80 && register >= 0x80) ||
+                              (num1 >= 0x80 && num2 >= 0x80 && register < 0x80);
     }
 
     private static updateNegativeFlag(register: number) {

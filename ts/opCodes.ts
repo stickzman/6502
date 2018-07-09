@@ -14,9 +14,8 @@ opTable[0x00] = {
     bytes: 1,
     cycles: 7,
     execute: function() {
-        this.running = false;
         this.flags.break = true;
-        this.handleForcedInterrupt(0xFFFE);
+        this.handleInterrupt(this.INT_VECT_LOC);
     }
 }
 
@@ -1549,5 +1548,38 @@ opTable[0x28] = {
         this.flags.overflow = ((sByte & mask) != 0);
         mask = 1 << 7;
         this.flags.negative = ((sByte & mask) != 0);
+    }
+}
+
+opTable[0x40] = {
+    name: "RTI", //Return from Interrupt
+    bytes: 1,
+    cycles: 6,
+    execute: function() {
+        //Pull processor flags from stack
+        let sByte = this.pullStack();
+        //Adjust mask and check each indv bit for each flag
+        let mask = 1;
+        this.flags.carry = ((sByte & mask) != 0);
+        mask = 1 << 1;
+        this.flags.zero = ((sByte & mask) != 0);
+        mask = 1 << 2;
+        this.flags.interruptDisable = ((sByte & mask) != 0);
+        mask = 1 << 3;
+        this.flags.decimalMode = ((sByte & mask) != 0);
+        mask = 1 << 4;
+        this.flags.break = ((sByte & mask) != 0);
+        mask = 1 << 6;
+        this.flags.overflow = ((sByte & mask) != 0);
+        mask = 1 << 7;
+        this.flags.negative = ((sByte & mask) != 0);
+        //Pull PC from stack
+        let loByte = this.pullStack();
+        let hiByte = this.pullStack();
+        let addr = combineHex(hiByte, loByte);
+        if (this.debug) {
+            console.log(`Return to location 0x${addr} from interrupt...`);
+        }
+        this.PC = addr;
     }
 }

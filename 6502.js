@@ -5,9 +5,8 @@ opTable[0x00] = {
     bytes: 1,
     cycles: 7,
     execute: function () {
-        this.running = false;
         this.flags.break = true;
-        this.handleForcedInterrupt(0xFFFE);
+        this.handleInterrupt(this.INT_VECT_LOC);
     }
 };
 opTable[0xA9] = {
@@ -1523,6 +1522,38 @@ opTable[0x28] = {
         this.flags.negative = ((sByte & mask) != 0);
     }
 };
+opTable[0x40] = {
+    name: "RTI",
+    bytes: 1,
+    cycles: 6,
+    execute: function () {
+        //Pull processor flags from stack
+        let sByte = this.pullStack();
+        //Adjust mask and check each indv bit for each flag
+        let mask = 1;
+        this.flags.carry = ((sByte & mask) != 0);
+        mask = 1 << 1;
+        this.flags.zero = ((sByte & mask) != 0);
+        mask = 1 << 2;
+        this.flags.interruptDisable = ((sByte & mask) != 0);
+        mask = 1 << 3;
+        this.flags.decimalMode = ((sByte & mask) != 0);
+        mask = 1 << 4;
+        this.flags.break = ((sByte & mask) != 0);
+        mask = 1 << 6;
+        this.flags.overflow = ((sByte & mask) != 0);
+        mask = 1 << 7;
+        this.flags.negative = ((sByte & mask) != 0);
+        //Pull PC from stack
+        let loByte = this.pullStack();
+        let hiByte = this.pullStack();
+        let addr = combineHex(hiByte, loByte);
+        if (this.debug) {
+            console.log(`Return to location 0x${addr} from interrupt...`);
+        }
+        this.PC = addr;
+    }
+};
 /// <reference path="opCodes.ts" />
 class p6502 {
     static boot() {
@@ -1530,9 +1561,17 @@ class p6502 {
             this.mem = new Uint8Array(0x10000);
         }
         this.reset();
-        this.running = true;
         //Main loop
-        while (this.running) {
+        while (!this.flags.break) {
+            //Check interrupt lines
+            if (this.NMI) {
+                this.NMI = false;
+                this.handleInterrupt(this.NMI_VECT_LOC);
+            }
+            else if (this.IRQ && !this.flags.interruptDisable) {
+                this.IRQ = false;
+                this.handleInterrupt(this.INT_VECT_LOC);
+            }
             let opCode = this.mem[this.PC]; //Fetch
             let op = opTable[opCode]; //Decode
             if (op === undefined) {
@@ -1555,19 +1594,18 @@ class p6502 {
     static loadProg(filePath) {
         let fs = require("fs");
         let prog = fs.readFileSync(filePath);
-        let mem = new Buffer(this.MEM_SIZE);
-        prog.copy(mem, 0x0200);
-        mem[0xFFFC] = 0x00;
-        mem[0xFFFD] = 0x02;
-        this.mem = mem;
+        this.loadProgBuff(prog);
     }
     static loadProgStr(str) {
         str = str.replace(/[^A-z0-9]/g, "");
         let prog = Buffer.from(str, "hex");
+        this.loadProgBuff(prog);
+    }
+    static loadProgBuff(buff) {
         let mem = new Buffer(this.MEM_SIZE);
-        prog.copy(mem, 0x0200);
-        mem[0xFFFC] = 0x00;
-        mem[0xFFFD] = 0x02;
+        buff.copy(mem, 0x0200);
+        mem[this.RES_VECT_LOC] = 0x00;
+        mem[this.RES_VECT_LOC + 1] = 0x02;
         this.mem = mem;
     }
     static writeMem() {
@@ -1575,21 +1613,17 @@ class p6502 {
         fs.writeFileSync(this.MEM_PATH, Buffer.from(this.mem));
     }
     static requestInterrupt() {
-        this.handleInterrupt(0xFFFE);
+        this.IRQ = true;
     }
-    static requestNonMaskInterrupt() {
-        this.handleInterrupt(0xFFFA);
+    static requestNMInterrupt() {
+        this.NMI = true;
     }
     static reset() {
         this.flags.interruptDisable = true;
         this.PC = this.getResetVector();
+        this.flags.interruptDisable = false;
     }
     static handleInterrupt(resetVectStartAddr) {
-        if (!this.flags.interruptDisable) {
-            this.handleForcedInterrupt(resetVectStartAddr);
-        }
-    }
-    static handleForcedInterrupt(resetVectStartAddr) {
         //Split PC and add each addr byte to stack
         let bytes = splitHex(this.PC);
         this.pushStack(bytes[0]); //MSB
@@ -1642,8 +1676,8 @@ class p6502 {
     static updateOverflowFlag(register, num1, num2) {
         //If the sum of two like signed terms is a diff sign, then the
         //signed result is outside [-128, 127], so set overflow flag
-        this.flags.overflow = (num1 < 0x80 && num2 < 0x80 && this.ACC >= 0x80) ||
-            (num1 >= 0x80 && num2 >= 0x80 && this.ACC < 0x80);
+        this.flags.overflow = (num1 < 0x80 && num2 < 0x80 && register >= 0x80) ||
+            (num1 >= 0x80 && num2 >= 0x80 && register < 0x80);
     }
     static updateNegativeFlag(register) {
         this.flags.negative = (register > 0x7F);
@@ -1674,7 +1708,11 @@ class p6502 {
 p6502.debug = true; //Output debug info
 p6502.MEM_PATH = "mem.hex";
 p6502.MEM_SIZE = 0x10000;
-p6502.running = false;
+p6502.RES_VECT_LOC = 0xFFFC;
+p6502.INT_VECT_LOC = 0xFFFE;
+p6502.NMI_VECT_LOC = 0xFFFA;
+p6502.IRQ = false; //Interrupt Request signal line
+p6502.NMI = false; //Non-Maskable Interrupt signal line
 p6502.ACC = 0; //Accumulator
 p6502.X = 0; //Register X
 p6502.Y = 0; //Register Y
