@@ -196,14 +196,14 @@ class p6502 {
     private static getRef(offset: number = 0): number {
         let addr = this.next2Bytes() + offset;
         if (this.debug) { console.log(`Accessing memory at 0x${
-            addr.toString(16).padStart(4, "0")}...`); }
+            addr.toString(16).padStart(4, "0").toUpperCase()}...`); }
         return addr;
     }
 
     private static getZPageRef(offset: number = 0): number {
         let addr = this.nextByte() + offset;
         if (this.debug) { console.log(`Accessing memory at 0x${
-            addr.toString(16).padStart(4, "0")}...`); }
+            addr.toString(16).padStart(4, "0").toUpperCase()}...`); }
         return addr;
     }
 

@@ -394,7 +394,7 @@ opTable[0x69] = {
     bytes: 2,
     cycles: 2,
     execute: function() {
-        ADC.bind(this).call(this.nextByte());
+        ADC.call(this, this.nextByte());
     }
 }
 opTable[0x65] = {
@@ -403,7 +403,7 @@ opTable[0x65] = {
     cycles: 3,
     execute: function() {
         let addr = this.getZPageRef();
-        ADC.bind(this).call(this.mem[addr]);
+        ADC.call(this, this.mem[addr]);
     }
 }
 opTable[0x75] = {
@@ -412,7 +412,7 @@ opTable[0x75] = {
     cycles: 4,
     execute: function() {
         let addr = this.getZPageRef(this.X);
-        ADC.bind(this).call(this.mem[addr]);
+        ADC.call(this, this.mem[addr]);
     }
 }
 opTable[0x6D] = {
@@ -421,7 +421,7 @@ opTable[0x6D] = {
     cycles: 4,
     execute: function() {
         let addr = this.getRef();
-        ADC.bind(this).call(this.mem[addr]);
+        ADC.call(this, this.mem[addr]);
     }
 }
 opTable[0x7D] = {
@@ -430,7 +430,7 @@ opTable[0x7D] = {
     cycles: 4,
     execute: function() {
         let addr = this.getRef(this.X);
-        ADC.bind(this).call(this.mem[addr]);
+        ADC.call(this, this.mem[addr]);
     }
 }
 opTable[0x79] = {
@@ -439,7 +439,7 @@ opTable[0x79] = {
     cycles: 4,
     execute: function() {
         let addr = this.getRef(this.Y);
-        ADC.bind(this).call(this.mem[addr]);
+        ADC.call(this, this.mem[addr]);
     }
 }
 opTable[0x61] = {
@@ -448,7 +448,7 @@ opTable[0x61] = {
     cycles: 6,
     execute: function() {
         let addr = this.getIndrRef(this.X);
-        ADC.bind(this).call(this.mem[addr]);
+        ADC.call(this, this.mem[addr]);
     }
 }
 opTable[0x71] = {
@@ -457,7 +457,7 @@ opTable[0x71] = {
     cycles: 6,
     execute: function() {
         let addr = this.getIndrRef(this.Y);
-        ADC.bind(this).call(this.mem[addr]);
+        ADC.call(this, this.mem[addr]);
     }
 }
 
@@ -481,7 +481,7 @@ opTable[0xE9] = {
     bytes: 2,
     cycles: 2,
     execute: function() {
-        SBC.bind(this).call(this.nextByte());
+        SBC.call(this, this.nextByte());
     }
 }
 opTable[0xE5] = {
@@ -490,7 +490,7 @@ opTable[0xE5] = {
     cycles: 3,
     execute: function() {
         let num = this.mem[this.getZPageRef()];
-        SBC.bind(this).call(num);
+        SBC.call(this, num);
     }
 }
 opTable[0xF5] = {
@@ -499,7 +499,7 @@ opTable[0xF5] = {
     cycles: 4,
     execute: function() {
         let num = this.mem[this.getZPageRef(this.X)];
-        SBC.bind(this).call(num);
+        SBC.call(this, num);
     }
 }
 opTable[0xED] = {
@@ -508,7 +508,7 @@ opTable[0xED] = {
     cycles: 4,
     execute: function() {
         let num = this.mem[this.getRef()];
-        SBC.bind(this).call(num);
+        SBC.call(this, num);
     }
 }
 opTable[0xFD] = {
@@ -517,7 +517,7 @@ opTable[0xFD] = {
     cycles: 4,
     execute: function() {
         let num = this.mem[this.getRef(this.X)];
-        SBC.bind(this).call(num);
+        SBC.call(this, num);
     }
 }
 opTable[0xF9] = {
@@ -526,7 +526,7 @@ opTable[0xF9] = {
     cycles: 4,
     execute: function() {
         let num = this.mem[this.getRef(this.Y)];
-        SBC.bind(this).call(num);
+        SBC.call(this, num);
     }
 }
 opTable[0xE1] = {
@@ -535,7 +535,7 @@ opTable[0xE1] = {
     cycles: 6,
     execute: function() {
         let num = this.mem[this.getIndrRef(this.X)];
-        SBC.bind(this).call(num);
+        SBC.call(this, num);
     }
 }
 opTable[0xF1] = {
@@ -544,7 +544,7 @@ opTable[0xF1] = {
     cycles: 6,
     execute: function() {
         let num = this.mem[this.getIndrRef(this.Y)];
-        SBC.bind(this).call(num);
+        SBC.call(this, num);
     }
 }
 
@@ -745,7 +745,7 @@ opTable[0xC9] = {
     bytes: 2,
     cycles: 2,
     execute: function() {
-        CMP.bind(this).call(this.nextByte(), this.ACC);
+        CMP.call(this, this.nextByte(), this.ACC);
     }
 }
 opTable[0xC5] = {
@@ -753,7 +753,7 @@ opTable[0xC5] = {
     bytes: 2,
     cycles: 3,
     execute: function() {
-        CMP.bind(this).call(this.mem[this.getZPageRef()], this.ACC);
+        CMP.call(this, this.mem[this.getZPageRef()], this.ACC);
     }
 }
 opTable[0xD5] = {
@@ -761,7 +761,7 @@ opTable[0xD5] = {
     bytes: 2,
     cycles: 4,
     execute: function() {
-        CMP.bind(this).call(this.mem[this.getZPageRef(this.X)], this.ACC);
+        CMP.call(this, this.mem[this.getZPageRef(this.X)], this.ACC);
     }
 }
 opTable[0xCD] = {
@@ -769,7 +769,7 @@ opTable[0xCD] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        CMP.bind(this).call(this.mem[this.getRef()], this.ACC);
+        CMP.call(this, this.mem[this.getRef()], this.ACC);
     }
 }
 opTable[0xDD] = {
@@ -777,7 +777,7 @@ opTable[0xDD] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        CMP.bind(this).call(this.mem[this.getRef(this.X)], this.ACC);
+        CMP.call(this, this.mem[this.getRef(this.X)], this.ACC);
     }
 }
 opTable[0xD9] = {
@@ -785,7 +785,7 @@ opTable[0xD9] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        CMP.bind(this).call(this.mem[this.getRef(this.Y)], this.ACC);
+        CMP.call(this, this.mem[this.getRef(this.Y)], this.ACC);
     }
 }
 opTable[0xC1] = {
@@ -793,7 +793,7 @@ opTable[0xC1] = {
     bytes: 2,
     cycles: 6,
     execute: function() {
-        CMP.bind(this).call(this.mem[this.getIndrRef(this.X)], this.ACC);
+        CMP.call(this, this.mem[this.getIndrRef(this.X)], this.ACC);
     }
 }
 opTable[0xD1] = {
@@ -801,7 +801,7 @@ opTable[0xD1] = {
     bytes: 2,
     cycles: 5,
     execute: function() {
-        CMP.bind(this).call(this.mem[this.getIndrRef(this.Y)], this.ACC);
+        CMP.call(this, this.mem[this.getIndrRef(this.Y)], this.ACC);
     }
 }
 opTable[0xE0] = {
@@ -809,7 +809,7 @@ opTable[0xE0] = {
     bytes: 2,
     cycles: 2,
     execute: function() {
-        CMP.bind(this).call(this.nextByte(), this.X);
+        CMP.call(this, this.nextByte(), this.X);
     }
 }
 opTable[0xE4] = {
@@ -817,7 +817,7 @@ opTable[0xE4] = {
     bytes: 2,
     cycles: 3,
     execute: function() {
-        CMP.bind(this).call(this.mem[this.getZPageRef()], this.X);
+        CMP.call(this, this.mem[this.getZPageRef()], this.X);
     }
 }
 opTable[0xEC] = {
@@ -825,7 +825,7 @@ opTable[0xEC] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        CMP.bind(this).call(this.mem[this.getRef()], this.X);
+        CMP.call(this, this.mem[this.getRef()], this.X);
     }
 }
 opTable[0xC0] = {
@@ -833,7 +833,7 @@ opTable[0xC0] = {
     bytes: 2,
     cycles: 2,
     execute: function() {
-        CMP.bind(this).call(this.nextByte(), this.Y);
+        CMP.call(this, this.nextByte(), this.Y);
     }
 }
 opTable[0xC4] = {
@@ -841,7 +841,7 @@ opTable[0xC4] = {
     bytes: 2,
     cycles: 3,
     execute: function() {
-        CMP.bind(this).call(this.mem[this.getZPageRef()], this.Y);
+        CMP.call(this, this.mem[this.getZPageRef()], this.Y);
     }
 }
 opTable[0xCC] = {
@@ -849,7 +849,7 @@ opTable[0xCC] = {
     bytes: 3,
     cycles: 4,
     execute: function() {
-        CMP.bind(this).call(this.mem[this.getRef()], this.Y);
+        CMP.call(this, this.mem[this.getRef()], this.Y);
     }
 }
 
@@ -1365,8 +1365,9 @@ function branch() {
     if (this.debug) {
         console.log(`Branching ${dist} bytes...`);
     }
-    if (this.debug && dist == -2) {
-        console.log("TRAPPED");
+    if (dist == -2) {
+        console.log(`TRAPPED at 0x${
+            this.PC.toString(16).padStart(4,"0").toUpperCase()}`);
         this.flags.break = true;
     }
     this.PC += dist;
@@ -1377,7 +1378,7 @@ opTable[0x90] = {
     cycles: 2,
     execute: function() {
         if (!this.flags.carry) {
-            branch.bind(this).call();
+            branch.call(this);
         }
     }
 }
@@ -1387,7 +1388,7 @@ opTable[0xB0] = {
     cycles: 2,
     execute: function() {
         if (this.flags.carry) {
-            branch.bind(this).call();
+            branch.call(this);
         }
     }
 }
@@ -1397,7 +1398,7 @@ opTable[0x30] = {
     cycles: 2,
     execute: function() {
         if (this.flags.negative) {
-            branch.bind(this).call();
+            branch.call(this);
         }
     }
 }
@@ -1407,7 +1408,7 @@ opTable[0x10] = {
     cycles: 2,
     execute: function() {
         if (!this.flags.negative) {
-            branch.bind(this).call();
+            branch.call(this);
         }
     }
 }
@@ -1417,7 +1418,7 @@ opTable[0xF0] = {
     cycles: 2,
     execute: function() {
         if (this.flags.zero) {
-            branch.bind(this).call();
+            branch.call(this);
         }
     }
 }
@@ -1427,7 +1428,7 @@ opTable[0xD0] = {
     cycles: 2, //TODO: Adjust cycles conditionally
     execute: function() {
         if (!this.flags.zero) {
-            branch.bind(this).call();
+            branch.call(this);
         }
     }
 }
@@ -1437,7 +1438,7 @@ opTable[0x50] = {
     cycles: 2,
     execute: function() {
         if (!this.flags.overflow) {
-            branch.bind(this).call();
+            branch.call(this);
         }
     }
 }
@@ -1447,7 +1448,7 @@ opTable[0x70] = {
     cycles: 2,
     execute: function() {
         if (this.flags.overflow) {
-            branch.bind(this).call();
+            branch.call(this);
         }
     }
 }
@@ -1461,8 +1462,9 @@ opTable[0x4C] = {
         if (this.debug) {
             console.log(`Jumping to location 0x${addr.toString(16).padStart(4, "0")}...`);
         }
-        if (this.debug && addr == this.PC) {
-            console.log("TRAPPED");
+        if (addr == this.PC) {
+            console.log(`TRAPPED at 0x${
+                this.PC.toString(16).padStart(4,"0").toUpperCase()}`);
             this.flags.break = true;
         }
         this.PC = addr - 3;
@@ -1477,8 +1479,9 @@ opTable[0x6C] = {
         if (this.debug) {
             console.log(`Jumping to location 0x${addr}...`);
         }
-        if (this.debug && addr == this.PC) {
-            console.log("TRAPPED");
+        if (addr == this.PC) {
+            console.log(`TRAPPED at 0x${
+                this.PC.toString(16).padStart(4,"0").toUpperCase()}`);
             this.flags.break = true;
         }
         this.PC = addr - 3;
@@ -1543,7 +1546,7 @@ opTable[0x08] = {
     bytes: 1,
     cycles: 3,
     execute: function() {
-        pushStatusToStack.bind(this).call();
+        pushStatusToStack.call(this);
     }
 }
 opTable[0x68] = {
