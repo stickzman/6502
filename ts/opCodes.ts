@@ -14,8 +14,7 @@ opTable[0x00] = {
     bytes: 1,
     cycles: 7,
     execute: function() {
-        this.flags.break = true;
-        this.handleInterrupt(this.INT_VECT_LOC);
+        this.handleInterrupt(this.INT_VECT_LOC, true);
     }
 }
 

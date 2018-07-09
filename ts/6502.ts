@@ -117,7 +117,7 @@ class p6502 {
         this.flags.interruptDisable = false;
     }
 
-    private static handleInterrupt(resetVectStartAddr: number) {
+    private static handleInterrupt(resetVectStartAddr: number, setBRK = false) {
         //Split PC and add each addr byte to stack
         let bytes = splitHex(this.PC);
         this.pushStack(bytes[0]); //MSB
@@ -129,6 +129,7 @@ class p6502 {
         statusByte += (this.flags.zero) ? 2 : 0;
         statusByte += (this.flags.interruptDisable) ? 4 : 0;
         statusByte += (this.flags.decimalMode) ? 8 : 0;
+        statusByte += (setBRK) ? 16 : 0;
         statusByte += 32; //This bit always set
         statusByte += (this.flags.overflow) ? 64 : 0;
         statusByte += (this.flags.negative) ? 128 : 0;
@@ -137,7 +138,7 @@ class p6502 {
         this.flags.interruptDisable = true;
         //Set program counter to interrupt vector
         let vector = new Uint8Array(
-            this.mem.slice(resetVectStartAddr, resetVectStartAddr+1));
+            this.mem.slice(resetVectStartAddr, resetVectStartAddr+2));
         this.PC = combineHexBuff(vector.reverse());
     }
 
