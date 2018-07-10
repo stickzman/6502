@@ -445,11 +445,12 @@ opTable[0x71] = {
 };
 function SBC(num) {
     let num2 = this.ACC;
-    this.ACC -= num + this.flags.carry;
-    //Wrap ACC and set/clear carry flag
-    if (this.ACC < 0x00) {
+    let mask = 0xFF;
+    let flipBits = num ^ mask;
+    this.ACC += flipBits + this.flags.carry;
+    if (this.ACC > 0xFF) {
         this.flags.carry = true;
-        this.ACC += 0x100;
+        this.ACC -= 0x100;
     }
     else {
         this.flags.carry = false;
