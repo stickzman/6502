@@ -88,7 +88,7 @@ opTable[0xA1] = {
         this.updateNumStateFlags(this.ACC);
     }
 }
-opTable[0xA1] = {
+opTable[0xB1] = {
     name: "LDA (ind, Y)",
     bytes: 2,
     cycles: 5,
