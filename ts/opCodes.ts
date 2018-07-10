@@ -1596,8 +1596,6 @@ opTable[0x40] = {
         this.flags.interruptDisable = ((sByte & mask) != 0);
         mask = 1 << 3;
         this.flags.decimalMode = ((sByte & mask) != 0);
-        mask = 1 << 4;
-        this.flags.break = ((sByte & mask) != 0);
         mask = 1 << 6;
         this.flags.overflow = ((sByte & mask) != 0);
         mask = 1 << 7;
@@ -1607,7 +1605,9 @@ opTable[0x40] = {
         let hiByte = this.pullStack();
         let addr = combineHex(hiByte, loByte);
         if (this.debug) {
-            console.log(`Return to location 0x${addr} from interrupt...`);
+            console.log(`Return to location 0x${
+                addr.toString(16).padStart(4, "0").toUpperCase()
+                } from interrupt...`);
         }
         this.PC = addr;
     }
