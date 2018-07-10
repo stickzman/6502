@@ -73,7 +73,7 @@ opTable[0xA1] = {
     bytes: 2,
     cycles: 6,
     execute: function () {
-        let addr = this.getIndRef(this.X);
+        let addr = this.getIndrRef(this.X);
         this.ACC = this.mem[addr];
         this.updateNumStateFlags(this.ACC);
     }
@@ -83,7 +83,7 @@ opTable[0xB1] = {
     bytes: 2,
     cycles: 5,
     execute: function () {
-        let addr = this.getIndRef(this.Y);
+        let addr = this.getIndrRef(this.Y);
         this.ACC = this.mem[addr];
         this.updateNumStateFlags(this.ACC);
     }
