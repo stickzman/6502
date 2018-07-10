@@ -1726,6 +1726,7 @@ class p6502 {
     }
     static getZPageRef(offset = 0) {
         let addr = this.nextByte() + offset;
+        addr -= (addr > 0xFF) ? 0x100 : 0;
         if (this.debug) {
             console.log(`Accessing memory at 0x${addr.toString(16).padStart(4, "0").toUpperCase()}...`);
         }
