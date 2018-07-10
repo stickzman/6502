@@ -5,6 +5,7 @@ opTable[0x00] = {
     bytes: 0,
     cycles: 7,
     execute: function () {
+        this.PC += 2;
         this.handleInterrupt(this.INT_VECT_LOC, true);
     }
 };
