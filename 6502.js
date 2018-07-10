@@ -1733,7 +1733,7 @@ class p6502 {
         return addr;
     }
     static getIndrRef(offset = 0) {
-        let addr = this.getRef();
+        let addr = this.getZPageRef(offset);
         return combineHex(this.mem[addr + 1], this.mem[addr]);
     }
 }
