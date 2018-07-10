@@ -1564,7 +1564,7 @@ opTable[0x40] = {
         if (this.debug) {
             console.log(`Return to location 0x${addr.toString(16).padStart(4, "0").toUpperCase()} from interrupt...`);
         }
-        this.PC = addr;
+        this.PC = addr - 1;
     }
 };
 /// <reference path="opCodes.ts" />

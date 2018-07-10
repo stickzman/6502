@@ -1609,6 +1609,6 @@ opTable[0x40] = {
                 addr.toString(16).padStart(4, "0").toUpperCase()
                 } from interrupt...`);
         }
-        this.PC = addr;
+        this.PC = addr-1;
     }
 }
