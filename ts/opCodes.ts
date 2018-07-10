@@ -11,7 +11,7 @@ interface opTable {
 let opTable: opTable = {};
 opTable[0x00] = {
     name: "BRK", //TODO: Make this cause a non-maskable interrupt
-    bytes: 1,
+    bytes: 0,
     cycles: 7,
     execute: function() {
         this.handleInterrupt(this.INT_VECT_LOC, true);
