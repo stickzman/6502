@@ -911,7 +911,7 @@ opTable[0x21] = {
     bytes: 2,
     cycles: 6,
     execute: function() {
-        this.ACC = this.ACC & this.mem[this.getRef(this.X)];
+        this.ACC = this.ACC & this.mem[this.getIndrXRef()];
         this.updateNumStateFlags(this.ACC);
     }
 }
@@ -920,7 +920,7 @@ opTable[0x31] = {
     bytes: 2,
     cycles: 5,
     execute: function() {
-        this.ACC = this.ACC & this.mem[this.getRef(this.Y)];
+        this.ACC = this.ACC & this.mem[this.getIndrYRef()];
         this.updateNumStateFlags(this.ACC);
     }
 }
