@@ -311,7 +311,7 @@ opTable[0x94] = {
 }
 opTable[0x8C] = {
     name: "STY (abs)",
-    bytes: 2,
+    bytes: 3,
     cycles: 4,
     execute: function() {
         let addr = this.getRef();
