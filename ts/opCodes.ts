@@ -361,7 +361,6 @@ opTable[0x9A] = {
     cycles: 2,
     execute: function() {
         this.SP = this.X;
-        this.updateNumStateFlags(this.SP);
     }
 }
 opTable[0x98] = {

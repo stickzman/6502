@@ -345,7 +345,6 @@ opTable[0x9A] = {
     cycles: 2,
     execute: function () {
         this.SP = this.X;
-        this.updateNumStateFlags(this.SP);
     }
 };
 opTable[0x98] = {
@@ -1572,6 +1571,7 @@ class p6502 {
     static boot() {
         if (this.mem === undefined) {
             this.mem = new Uint8Array(0x10000);
+            this.mem.fill(0xFF);
         }
         this.reset();
         //Main loop
@@ -1620,6 +1620,7 @@ class p6502 {
     }
     static loadProgBuff(buff) {
         let mem = new Buffer(this.MEM_SIZE);
+        mem.fill(0xFF);
         buff.copy(mem, 0x0200);
         mem[this.RES_VECT_LOC] = 0x00;
         mem[this.RES_VECT_LOC + 1] = 0x02;
@@ -1668,17 +1669,20 @@ class p6502 {
         return combineHexBuff(bytes.reverse());
     }
     static pushStack(byte) {
-        //Write byte to stack & decrement pointer
-        this.mem[combineHex(0x01, this.SP--)] = byte;
+        //Write byte to stack
+        this.mem[combineHex(0x01, this.SP)] = byte;
+        //Decrement stack pointer, wrap if necessary
+        this.SP--;
         if (this.SP < 0) {
             this.SP = 0xFF;
-        } //Wrap stack pointer, if necessary
+        }
     }
     static pullStack() {
-        let byte = this.mem[combineHex(0x01, ++this.SP)];
+        this.SP++;
         if (this.SP > 0xFF) {
             this.SP = 0;
         }
+        let byte = this.mem[combineHex(0x01, this.SP)];
         return byte;
     }
     static displayState() {
