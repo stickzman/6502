@@ -108,11 +108,11 @@ opTable[0xA6] = {
     }
 };
 opTable[0xB6] = {
-    name: "LDX (zpg, X)",
+    name: "LDX (zpg, Y)",
     bytes: 2,
     cycles: 4,
     execute: function () {
-        let addr = this.getZPageRef(this.X);
+        let addr = this.getZPageRef(this.Y);
         this.X = this.mem[addr];
         this.updateNumStateFlags(this.X);
     }
@@ -128,11 +128,11 @@ opTable[0xAE] = {
     }
 };
 opTable[0xBE] = {
-    name: "LDX (abs, X)",
+    name: "LDX (abs, Y)",
     bytes: 3,
     cycles: 4,
     execute: function () {
-        let addr = this.getRef(this.X);
+        let addr = this.getRef(this.Y);
         this.X = this.mem[addr];
         this.updateNumStateFlags(this.X);
     }
