@@ -223,9 +223,14 @@ class p6502 {
         return addr;
     }
 
-    private static getIndrRef(offset: number = 0): number {
-        let addr = this.getZPageRef(offset);
+    private static getIndrXRef(): number {
+        let addr = this.getZPageRef(this.X);
         return combineHex(this.mem[addr+1], this.mem[addr]);
+    }
+
+    private static getIndrYRef(): number {
+        let addr = this.getZPageRef();
+        return combineHex(this.mem[addr+1], this.mem[addr]) + this.Y;
     }
 }
 

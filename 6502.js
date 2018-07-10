@@ -73,7 +73,7 @@ opTable[0xA1] = {
     bytes: 2,
     cycles: 6,
     execute: function () {
-        let addr = this.getIndrRef(this.X);
+        let addr = this.getIndrXRef();
         this.ACC = this.mem[addr];
         this.updateNumStateFlags(this.ACC);
     }
@@ -83,7 +83,7 @@ opTable[0xB1] = {
     bytes: 2,
     cycles: 5,
     execute: function () {
-        let addr = this.getIndrRef(this.Y);
+        let addr = this.getIndrYRef();
         this.ACC = this.mem[addr];
         this.updateNumStateFlags(this.ACC);
     }
@@ -236,7 +236,7 @@ opTable[0x81] = {
     bytes: 2,
     cycles: 6,
     execute: function () {
-        let addr = this.getIndrRef(this.X);
+        let addr = this.getIndrXRef();
         this.mem[addr] = this.ACC;
     }
 };
@@ -245,7 +245,7 @@ opTable[0x91] = {
     bytes: 2,
     cycles: 5,
     execute: function () {
-        let addr = this.getIndrRef(this.Y);
+        let addr = this.getIndrYRef();
         this.mem[addr] = this.ACC;
     }
 };
@@ -430,7 +430,7 @@ opTable[0x61] = {
     bytes: 2,
     cycles: 6,
     execute: function () {
-        let addr = this.getIndrRef(this.X);
+        let addr = this.getIndrXRef();
         ADC.call(this, this.mem[addr]);
     }
 };
@@ -439,7 +439,7 @@ opTable[0x71] = {
     bytes: 2,
     cycles: 6,
     execute: function () {
-        let addr = this.getIndrRef(this.Y);
+        let addr = this.getIndrYRef();
         ADC.call(this, this.mem[addr]);
     }
 };
@@ -517,7 +517,7 @@ opTable[0xE1] = {
     bytes: 2,
     cycles: 6,
     execute: function () {
-        let num = this.mem[this.getIndrRef(this.X)];
+        let num = this.mem[this.getIndrXRef()];
         SBC.call(this, num);
     }
 };
@@ -526,7 +526,7 @@ opTable[0xF1] = {
     bytes: 2,
     cycles: 6,
     execute: function () {
-        let num = this.mem[this.getIndrRef(this.Y)];
+        let num = this.mem[this.getIndrYRef()];
         SBC.call(this, num);
     }
 };
@@ -768,7 +768,7 @@ opTable[0xC1] = {
     bytes: 2,
     cycles: 6,
     execute: function () {
-        CMP.call(this, this.mem[this.getIndrRef(this.X)], this.ACC);
+        CMP.call(this, this.mem[this.getIndrXRef()], this.ACC);
     }
 };
 opTable[0xD1] = {
@@ -776,7 +776,7 @@ opTable[0xD1] = {
     bytes: 2,
     cycles: 5,
     execute: function () {
-        CMP.call(this, this.mem[this.getIndrRef(this.Y)], this.ACC);
+        CMP.call(this, this.mem[this.getIndrYRef()], this.ACC);
     }
 };
 opTable[0xE0] = {
@@ -1439,7 +1439,8 @@ opTable[0x6C] = {
     bytes: 3,
     cycles: 5,
     execute: function () {
-        let addr = this.getIndrRef();
+        let indAddr = this.next2Bytes();
+        let addr = combineHex(this.mem[indAddr + 1], this.mem[indAddr]);
         if (this.debug) {
             console.log(`Jumping to location 0x${addr}...`);
         }
@@ -1732,9 +1733,13 @@ class p6502 {
         }
         return addr;
     }
-    static getIndrRef(offset = 0) {
-        let addr = this.getZPageRef(offset);
+    static getIndrXRef() {
+        let addr = this.getZPageRef(this.X);
         return combineHex(this.mem[addr + 1], this.mem[addr]);
+    }
+    static getIndrYRef() {
+        let addr = this.getZPageRef();
+        return combineHex(this.mem[addr + 1], this.mem[addr]) + this.Y;
     }
 }
 p6502.debug = false; //Output debug info
