@@ -374,6 +374,9 @@ opTable[0x98] = {
 }
 
 function ADC(num: number) {
+    if (this.flags.decimalMode) {
+        console.log("Warning: BCD ADC not supported at 0x" + this.PC.toString(16));
+    }
     let num2 = this.ACC;
     this.ACC += num + this.flags.carry;
     //Wrap ACC and set/clear carry flag
@@ -461,20 +464,12 @@ opTable[0x71] = {
 }
 
 function SBC(num: number) {
-    let num2 = this.ACC;
+    if (this.flags.decimalMode) {
+        console.log("Warning: BCD SBC not supported at 0x" + this.PC.toString(16));
+    }
     let mask = 0xFF;
     let flipBits = num ^ mask;
-    this.ACC += flipBits + this.flags.carry;
-    if (this.ACC > 0xFF) {
-        this.flags.carry = true;
-        this.ACC -= 0x100;
-    } else {
-        this.flags.carry = false;
-    }
-    ///Set/clear overflow flag
-    this.updateOverflowFlag(this.ACC, num, num2);
-    //Set/clear negative + zero flags
-    this.updateNumStateFlags(this.ACC);
+    ADC.call(this, flipBits);
 }
 opTable[0xE9] = {
     name: "SBC (imm)",
