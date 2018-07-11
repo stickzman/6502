@@ -358,22 +358,35 @@ opTable[0x98] = {
 };
 function ADC(num) {
     if (this.flags.decimalMode) {
-        console.log("Warning: BCD ADC not supported at 0x" + this.PC.toString(16));
-    }
-    let num2 = this.ACC;
-    this.ACC += num + this.flags.carry;
-    //Wrap ACC and set/clear carry flag
-    if (this.ACC > 0xFF) {
-        this.flags.carry = true;
-        this.ACC -= 0x100;
+        //Convert current 2 digit hex to literal 2 digit decimal
+        let num2 = parseInt(this.ACC.toString(16));
+        num = parseInt(num.toString(16));
+        let res = num + num2 + this.flags.carry;
+        if (res > 99) {
+            this.flags.carry = true;
+            res -= 100;
+        }
+        else {
+            this.flags.carry = false;
+        }
+        this.ACC = parseInt(res.toString(), 16);
     }
     else {
-        this.flags.carry = false;
+        let num2 = this.ACC;
+        this.ACC += num + this.flags.carry;
+        //Wrap ACC and set/clear carry flag
+        if (this.ACC > 0xFF) {
+            this.flags.carry = true;
+            this.ACC -= 0x100;
+        }
+        else {
+            this.flags.carry = false;
+        }
+        ///Set/clear overflow flag
+        this.updateOverflowFlag(this.ACC, num, num2);
+        //Set/clear negative + zero flags
+        this.updateNumStateFlags(this.ACC);
     }
-    ///Set/clear overflow flag
-    this.updateOverflowFlag(this.ACC, num, num2);
-    //Set/clear negative + zero flags
-    this.updateNumStateFlags(this.ACC);
 }
 opTable[0x69] = {
     name: "ADC (imm)",
@@ -448,11 +461,25 @@ opTable[0x71] = {
 };
 function SBC(num) {
     if (this.flags.decimalMode) {
-        console.log("Warning: BCD SBC not supported at 0x" + this.PC.toString(16));
+        //Convert current 2 digit hex to literal 2 digit decimal
+        let num2 = parseInt(this.ACC.toString(16));
+        num = parseInt(num.toString(16));
+        let res = num2 - num;
+        res -= (this.flags.carry) ? 0 : 1;
+        if (res < 0) {
+            this.flags.carry = false;
+            res += 100;
+        }
+        else {
+            this.flags.carry = true;
+        }
+        this.ACC = parseInt(res.toString(), 16);
     }
-    let mask = 0xFF;
-    let flipBits = num ^ mask;
-    ADC.call(this, flipBits);
+    else {
+        let mask = 0xFF;
+        let flipBits = num ^ mask;
+        ADC.call(this, flipBits);
+    }
 }
 opTable[0xE9] = {
     name: "SBC (imm)",
@@ -1570,6 +1597,8 @@ class p6502 {
             this.mem.fill(0xFF);
         }
         this.reset();
+        let instrCount = 0;
+        let startTime = Date.now();
         //Main loop
         while (!this.flags.break) {
             //Check interrupt lines
@@ -1596,7 +1625,11 @@ class p6502 {
                 console.log("");
             }
             this.PC += op.bytes;
+            instrCount++;
         }
+        console.log("");
+        console.log(`Executed ${instrCount} instructions in ${(Date.now() - startTime) / 1000} seconds.`);
+        console.log("");
         //Write memory to file
         this.writeMem();
     }
@@ -1738,6 +1771,8 @@ class p6502 {
     }
 }
 p6502.debug = false; //Output debug info
+//Stop execution when an infinite loop is detected
+p6502.detectTraps = true;
 p6502.MEM_PATH = "mem.hex";
 p6502.MEM_SIZE = 0x10000;
 p6502.RES_VECT_LOC = 0xFFFC;

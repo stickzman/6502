@@ -1,6 +1,8 @@
 /// <reference path="opCodes.ts" />
 class p6502 {
     public static debug: boolean = false; //Output debug info
+    //Stop execution when an infinite loop is detected
+    public static detectTraps: boolean = true;
     private static readonly MEM_PATH = "mem.hex";
     private static readonly MEM_SIZE = 0x10000;
     private static readonly RES_VECT_LOC = 0xFFFC;
@@ -32,6 +34,9 @@ class p6502 {
             this.mem.fill(0xFF);
         }
         this.reset();
+
+        let instrCount = 0;
+        let startTime = Date.now();
 
         //Main loop
         while(!this.flags.break) {
@@ -67,7 +72,14 @@ class p6502 {
             }
 
             this.PC += op.bytes;
+
+            instrCount++;
         }
+
+        console.log("");
+        console.log(`Executed ${instrCount} instructions in ${
+            (Date.now() - startTime) / 1000} seconds.`);
+        console.log("");
 
         //Write memory to file
         this.writeMem();
