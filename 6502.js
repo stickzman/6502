@@ -1354,7 +1354,7 @@ function branch() {
     if (this.debug) {
         console.log(`Branching ${dist} bytes...`);
     }
-    if (dist == -2) {
+    if (dist == -2 && this.detectTraps) {
         console.log(`TRAPPED at 0x${this.PC.toString(16).padStart(4, "0").toUpperCase()}`);
         this.flags.break = true;
     }
@@ -1449,7 +1449,7 @@ opTable[0x4C] = {
         if (this.debug) {
             console.log(`Jumping to location 0x${addr.toString(16).padStart(4, "0")}...`);
         }
-        if (addr == this.PC) {
+        if (addr == this.PC && this.detectTraps) {
             console.log(`TRAPPED at 0x${this.PC.toString(16).padStart(4, "0").toUpperCase()}`);
             this.flags.break = true;
         }
@@ -1466,7 +1466,7 @@ opTable[0x6C] = {
         if (this.debug) {
             console.log(`Jumping to location 0x${addr}...`);
         }
-        if (addr == this.PC) {
+        if (addr == this.PC && this.detectTraps) {
             console.log(`TRAPPED at 0x${this.PC.toString(16).padStart(4, "0").toUpperCase()}`);
             this.flags.break = true;
         }
@@ -1771,7 +1771,7 @@ class p6502 {
 }
 p6502.debug = false; //Output debug info
 //Stop execution when an infinite loop is detected
-p6502.detectTraps = true;
+p6502.detectTraps = false;
 p6502.MEM_PATH = "mem.hex";
 p6502.MEM_SIZE = 0x10000;
 p6502.RES_VECT_LOC = 0xFFFC;
@@ -1796,15 +1796,18 @@ p6502.flags = {
 };
 let input = require('readline-sync');
 if (process.argv.length > 2) {
+    //Set flags based on arguments
+    p6502.debug = (process.argv.indexOf("-d") !== -1
+        || process.argv.indexOf("-D") !== -1);
+    p6502.detectTraps = (process.argv.indexOf("-t") !== -1
+        || process.argv.indexOf("-T") !== -1);
     let fileStr = process.argv[2];
-    //Ask if the file is just a program (and should be loaded in the proper spot)
-    //or a whole memory dump
-    let type = input.question("Program or Memory? (p/m): ");
-    if (type.toLowerCase().indexOf("p") == -1) {
-        p6502.loadMemory(fileStr);
+    if (process.argv.indexOf("-p") !== -1
+        || process.argv.indexOf("-p") !== -1) {
+        p6502.loadProg(fileStr);
     }
     else {
-        p6502.loadProg(fileStr);
+        p6502.loadMemory(fileStr);
     }
 }
 else {
@@ -1812,9 +1815,9 @@ else {
     if (hexStr.length > 0) {
         p6502.loadProgStr(hexStr);
     }
+    input = input.question("Debug? (y/n): ");
+    p6502.debug = (input.indexOf("y") !== -1);
 }
-input = input.question("Debug? (y/n): ");
-p6502.debug = (input.indexOf("y") !== -1);
 p6502.boot();
 console.log("");
 p6502.displayState();

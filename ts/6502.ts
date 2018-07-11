@@ -2,7 +2,7 @@
 class p6502 {
     public static debug: boolean = false; //Output debug info
     //Stop execution when an infinite loop is detected
-    public static detectTraps: boolean = true;
+    public static detectTraps: boolean = false;
 
     private static readonly MEM_PATH = "mem.hex";
     private static readonly MEM_SIZE = 0x10000;
@@ -246,24 +246,28 @@ class p6502 {
 let input = require('readline-sync');
 
 if (process.argv.length > 2) {
+    //Set flags based on arguments
+    p6502.debug = (process.argv.indexOf("-d") !== -1
+        || process.argv.indexOf("-D") !== -1);
+    p6502.detectTraps = (process.argv.indexOf("-t") !== -1
+        || process.argv.indexOf("-T") !== -1);
+        
     let fileStr = process.argv[2];
-    //Ask if the file is just a program (and should be loaded in the proper spot)
-    //or a whole memory dump
-    let type = input.question("Program or Memory? (p/m): ");
-    if (type.toLowerCase().indexOf("p") == -1) {
-        p6502.loadMemory(fileStr);
-    } else {
+    if (process.argv.indexOf("-p") !== -1
+            || process.argv.indexOf("-p") !== -1) {
         p6502.loadProg(fileStr);
+    } else {
+        p6502.loadMemory(fileStr);
     }
 } else {
     let hexStr = input.question("Please enter program hex: ");
     if (hexStr.length > 0) {
         p6502.loadProgStr(hexStr);
     }
+    input = input.question("Debug? (y/n): ");
+    p6502.debug = (input.indexOf("y") !== -1);
 }
 
-input = input.question("Debug? (y/n): ");
-p6502.debug = (input.indexOf("y") !== -1);
 p6502.boot();
 console.log("");
 p6502.displayState();

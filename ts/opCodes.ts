@@ -1384,7 +1384,7 @@ function branch() {
     if (this.debug) {
         console.log(`Branching ${dist} bytes...`);
     }
-    if (dist == -2) {
+    if (dist == -2 && this.detectTraps) {
         console.log(`TRAPPED at 0x${
             this.PC.toString(16).padStart(4,"0").toUpperCase()}`);
         this.flags.break = true;
@@ -1481,7 +1481,7 @@ opTable[0x4C] = {
         if (this.debug) {
             console.log(`Jumping to location 0x${addr.toString(16).padStart(4, "0")}...`);
         }
-        if (addr == this.PC) {
+        if (addr == this.PC  && this.detectTraps) {
             console.log(`TRAPPED at 0x${
                 this.PC.toString(16).padStart(4,"0").toUpperCase()}`);
             this.flags.break = true;
@@ -1499,7 +1499,7 @@ opTable[0x6C] = {
         if (this.debug) {
             console.log(`Jumping to location 0x${addr}...`);
         }
-        if (addr == this.PC) {
+        if (addr == this.PC  && this.detectTraps) {
             console.log(`TRAPPED at 0x${
                 this.PC.toString(16).padStart(4,"0").toUpperCase()}`);
             this.flags.break = true;
