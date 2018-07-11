@@ -1593,12 +1593,17 @@ opTable[0x40] = {
 class p6502 {
     static boot() {
         if (this.mem === undefined) {
-            this.mem = new Uint8Array(0x10000);
-            this.mem.fill(0xFF);
+            //Load existing memory, otherwise create empty [filled with 0xFF]
+            //buffer and write it to file.
+            if (this.fs.existsSync("mem.hex")) {
+                this.loadMemory("mem.hex");
+            }
+            else {
+                this.mem = new Uint8Array(0x10000);
+                this.mem.fill(0xFF);
+            }
         }
         this.reset();
-        let instrCount = 0;
-        let startTime = Date.now();
         //Main loop
         while (!this.flags.break) {
             //Check interrupt lines
@@ -1625,21 +1630,15 @@ class p6502 {
                 console.log("");
             }
             this.PC += op.bytes;
-            instrCount++;
         }
-        console.log("");
-        console.log(`Executed ${instrCount} instructions in ${(Date.now() - startTime) / 1000} seconds.`);
-        console.log("");
         //Write memory to file
         this.writeMem();
     }
     static loadMemory(filePath) {
-        let fs = require("fs");
-        this.mem = fs.readFileSync(filePath);
+        this.mem = this.fs.readFileSync(filePath);
     }
     static loadProg(filePath) {
-        let fs = require("fs");
-        let prog = fs.readFileSync(filePath);
+        let prog = this.fs.readFileSync(filePath);
         this.loadProgBuff(prog);
     }
     static loadProgStr(str) {
@@ -1778,6 +1777,7 @@ p6502.MEM_SIZE = 0x10000;
 p6502.RES_VECT_LOC = 0xFFFC;
 p6502.INT_VECT_LOC = 0xFFFE;
 p6502.NMI_VECT_LOC = 0xFFFA;
+p6502.fs = require("fs");
 p6502.IRQ = false; //Interrupt Request signal line
 p6502.NMI = false; //Non-Maskable Interrupt signal line
 p6502.ACC = 0; //Accumulator
@@ -1795,12 +1795,23 @@ p6502.flags = {
     negative: false //Result of last op had bit 7 set to 1
 };
 let input = require('readline-sync');
-let hexStr = input.question("Please enter program hex: ");
-if (hexStr.length > 0) {
-    p6502.loadProgStr(hexStr);
+if (process.argv.length > 2) {
+    let fileStr = process.argv[2];
+    //Ask if the file is just a program (and should be loaded in the proper spot)
+    //or a whole memory dump
+    let type = input.question("Program or Memory? (p/m): ");
+    if (type.toLowerCase().indexOf("p") == -1) {
+        p6502.loadMemory(fileStr);
+    }
+    else {
+        p6502.loadProg(fileStr);
+    }
 }
 else {
-    p6502.loadMemory("../6502_functional_test.bin");
+    let hexStr = input.question("Please enter program hex: ");
+    if (hexStr.length > 0) {
+        p6502.loadProgStr(hexStr);
+    }
 }
 input = input.question("Debug? (y/n): ");
 p6502.debug = (input.indexOf("y") !== -1);

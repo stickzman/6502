@@ -3,6 +3,7 @@ class p6502 {
     public static debug: boolean = false; //Output debug info
     //Stop execution when an infinite loop is detected
     public static detectTraps: boolean = true;
+
     private static readonly MEM_PATH = "mem.hex";
     private static readonly MEM_SIZE = 0x10000;
     private static readonly RES_VECT_LOC = 0xFFFC;
@@ -10,6 +11,8 @@ class p6502 {
     private static readonly NMI_VECT_LOC = 0xFFFA;
 
     private static mem: Uint8Array;
+    private static fs = require("fs");
+
     private static IRQ: boolean = false; //Interrupt Request signal line
     private static NMI: boolean = false; //Non-Maskable Interrupt signal line
 
@@ -30,13 +33,16 @@ class p6502 {
 
     public static boot() {
         if (this.mem === undefined) {
-            this.mem = new Uint8Array(0x10000);
-            this.mem.fill(0xFF);
+            //Load existing memory, otherwise create empty [filled with 0xFF]
+            //buffer and write it to file.
+            if (this.fs.existsSync("mem.hex")) {
+                this.loadMemory("mem.hex");
+            } else {
+                this.mem = new Uint8Array(0x10000);
+                this.mem.fill(0xFF);
+            }
         }
         this.reset();
-
-        let instrCount = 0;
-        let startTime = Date.now();
 
         //Main loop
         while(!this.flags.break) {
@@ -72,27 +78,18 @@ class p6502 {
             }
 
             this.PC += op.bytes;
-
-            instrCount++;
         }
-
-        console.log("");
-        console.log(`Executed ${instrCount} instructions in ${
-            (Date.now() - startTime) / 1000} seconds.`);
-        console.log("");
 
         //Write memory to file
         this.writeMem();
     }
 
     public static loadMemory(filePath: string) {
-        let fs = require("fs");
-        this.mem = fs.readFileSync(filePath) ;
+        this.mem = this.fs.readFileSync(filePath);
     }
 
     public static loadProg(filePath: string) {
-        let fs = require("fs");
-        let prog = fs.readFileSync(filePath) as Buffer;
+        let prog = this.fs.readFileSync(filePath) as Buffer;
         this.loadProgBuff(prog);
     }
 
@@ -247,12 +244,24 @@ class p6502 {
 }
 
 let input = require('readline-sync');
-let hexStr = input.question("Please enter program hex: ");
-if (hexStr.length > 0) {
-    p6502.loadProgStr(hexStr);
+
+if (process.argv.length > 2) {
+    let fileStr = process.argv[2];
+    //Ask if the file is just a program (and should be loaded in the proper spot)
+    //or a whole memory dump
+    let type = input.question("Program or Memory? (p/m): ");
+    if (type.toLowerCase().indexOf("p") == -1) {
+        p6502.loadMemory(fileStr);
+    } else {
+        p6502.loadProg(fileStr);
+    }
 } else {
-    p6502.loadMemory("../6502_functional_test.bin");
+    let hexStr = input.question("Please enter program hex: ");
+    if (hexStr.length > 0) {
+        p6502.loadProgStr(hexStr);
+    }
 }
+
 input = input.question("Debug? (y/n): ");
 p6502.debug = (input.indexOf("y") !== -1);
 p6502.boot();
