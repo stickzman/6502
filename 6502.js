@@ -1604,6 +1604,11 @@ class p6502 {
             }
         }
         this.reset();
+        let startTime = Date.now();
+        let totalCycles = 0;
+        let maxMSCycleCount = this.CPU_SPEED * 1000;
+        let currMSCycleCount = 0;
+        let prevMS = Date.now();
         //Main loop
         while (!this.flags.break) {
             //Check interrupt lines
@@ -1614,6 +1619,13 @@ class p6502 {
             else if (this.IRQ && !this.flags.interruptDisable) {
                 this.IRQ = false;
                 this.handleInterrupt(this.INT_VECT_LOC);
+            }
+            if (currMSCycleCount >= maxMSCycleCount) {
+                while (prevMS == Date.now()) {
+                    //Sit and wait
+                }
+                prevMS = Date.now();
+                currMSCycleCount = 0;
             }
             let opCode = this.mem[this.PC]; //Fetch
             let op = opTable[opCode]; //Decode
@@ -1630,7 +1642,13 @@ class p6502 {
                 console.log("");
             }
             this.PC += op.bytes;
+            currMSCycleCount += op.cycles;
+            totalCycles += op.cycles;
         }
+        console.log("");
+        console.log(totalCycles + " cycles in " + (Date.now() - startTime) + " ms");
+        console.log(`Avg: ${totalCycles / (Date.now() - startTime)} cycles per ms.`);
+        console.log(`Avg: ${(totalCycles / (Date.now() - startTime)) / 1000} million cycles per sec.`);
         //Write memory to file
         this.writeMem();
     }
@@ -1772,6 +1790,7 @@ class p6502 {
 p6502.debug = false; //Output debug info
 //Stop execution when an infinite loop is detected
 p6502.detectTraps = false;
+p6502.CPU_SPEED = 1.79; //in MHz
 p6502.MEM_PATH = "mem.hex";
 p6502.MEM_SIZE = 0x10000;
 p6502.RES_VECT_LOC = 0xFFFC;

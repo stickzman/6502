@@ -10,7 +10,7 @@ interface opTable {
 
 let opTable: opTable = {};
 opTable[0x00] = {
-    name: "BRK", //TODO: Make this cause a non-maskable interrupt
+    name: "BRK",
     bytes: 0,
     cycles: 7,
     execute: function() {
