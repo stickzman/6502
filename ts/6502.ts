@@ -4,7 +4,7 @@ class p6502 {
     //Stop execution when an infinite loop is detected
     public static detectTraps: boolean = false;
 
-    private static readonly CPU_SPEED = 1.79; //in MHz
+    private static readonly CPU_SPEED: number = -1; //in MHz, -1 for unlimited
     private static readonly MEM_PATH = "mem.hex";
     private static readonly MEM_SIZE = 0x10000;
     private static readonly RES_VECT_LOC = 0xFFFC;
@@ -51,7 +51,7 @@ class p6502 {
 
         //Main loop
         while(!this.flags.break) {
-            if (currMSCycleCount >= maxMSCycleCount) {
+            if (this.CPU_SPEED != -1 && currMSCycleCount >= maxMSCycleCount) {
                 while (prevMS == Date.now()) {
                     //Sit and wait
                 }

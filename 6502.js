@@ -1609,7 +1609,7 @@ class p6502 {
         let prevMS = Date.now();
         //Main loop
         while (!this.flags.break) {
-            if (currMSCycleCount >= maxMSCycleCount) {
+            if (this.CPU_SPEED != -1 && currMSCycleCount >= maxMSCycleCount) {
                 while (prevMS == Date.now()) {
                     //Sit and wait
                 }
@@ -1783,7 +1783,7 @@ class p6502 {
 p6502.debug = false; //Output debug info
 //Stop execution when an infinite loop is detected
 p6502.detectTraps = false;
-p6502.CPU_SPEED = 1.79; //in MHz
+p6502.CPU_SPEED = -1; //in MHz, -1 for unlimited
 p6502.MEM_PATH = "mem.hex";
 p6502.MEM_SIZE = 0x10000;
 p6502.RES_VECT_LOC = 0xFFFC;
