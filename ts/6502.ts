@@ -137,8 +137,8 @@ class p6502 {
 
     public static reset() {
         this.flags.interruptDisable = true;
-        //this.PC = this.getResetVector();
-        this.PC = 0x400;
+        this.PC = this.getResetVector();
+        //this.PC = 0x400;
         this.flags.interruptDisable = false;
     }
 

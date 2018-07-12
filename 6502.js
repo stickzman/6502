@@ -1677,8 +1677,8 @@ class p6502 {
     }
     static reset() {
         this.flags.interruptDisable = true;
-        //this.PC = this.getResetVector();
-        this.PC = 0x400;
+        this.PC = this.getResetVector();
+        //this.PC = 0x400;
         this.flags.interruptDisable = false;
     }
     static handleInterrupt(resetVectStartAddr, setBRK = false) {
