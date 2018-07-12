@@ -1604,13 +1604,18 @@ class p6502 {
             }
         }
         this.reset();
-        let startTime = Date.now();
-        let totalCycles = 0;
         let maxMSCycleCount = this.CPU_SPEED * 1000;
         let currMSCycleCount = 0;
         let prevMS = Date.now();
         //Main loop
         while (!this.flags.break) {
+            if (currMSCycleCount >= maxMSCycleCount) {
+                while (prevMS == Date.now()) {
+                    //Sit and wait
+                }
+                prevMS = Date.now();
+                currMSCycleCount = 0;
+            }
             //Check interrupt lines
             if (this.NMI) {
                 this.NMI = false;
@@ -1619,13 +1624,6 @@ class p6502 {
             else if (this.IRQ && !this.flags.interruptDisable) {
                 this.IRQ = false;
                 this.handleInterrupt(this.INT_VECT_LOC);
-            }
-            if (currMSCycleCount >= maxMSCycleCount) {
-                while (prevMS == Date.now()) {
-                    //Sit and wait
-                }
-                prevMS = Date.now();
-                currMSCycleCount = 0;
             }
             let opCode = this.mem[this.PC]; //Fetch
             let op = opTable[opCode]; //Decode
@@ -1643,12 +1641,7 @@ class p6502 {
             }
             this.PC += op.bytes;
             currMSCycleCount += op.cycles;
-            totalCycles += op.cycles;
         }
-        console.log("");
-        console.log(totalCycles + " cycles in " + (Date.now() - startTime) + " ms");
-        console.log(`Avg: ${totalCycles / (Date.now() - startTime)} cycles per ms.`);
-        console.log(`Avg: ${(totalCycles / (Date.now() - startTime)) / 1000} million cycles per sec.`);
         //Write memory to file
         this.writeMem();
     }
